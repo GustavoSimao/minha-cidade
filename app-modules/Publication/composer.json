@@ -1,0 +1,18 @@
+{
+    "name": "minha-cidade/publication",
+    "type": "library",
+    "version": "1.0",
+    "license": "proprietary",
+    "autoload": {
+        "psr-4": {
+            "MinhaCidade\\Publication\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "MinhaCidade\\Publication\\PublicationServiceProvider"
+            ]
+        }
+    }
+}

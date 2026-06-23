@@ -1,0 +1,18 @@
+{
+    "name": "minha-cidade/identity",
+    "type": "library",
+    "version": "1.0",
+    "license": "proprietary",
+    "autoload": {
+        "psr-4": {
+            "MinhaCidade\\Identity\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "MinhaCidade\\Identity\\IdentityServiceProvider"
+            ]
+        }
+    }
+}
