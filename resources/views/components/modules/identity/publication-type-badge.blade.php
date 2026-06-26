@@ -1,4 +1,3 @@
-{{-- components/publication-type-badge.blade.php --}}
 @php
     $config = match($type) {
         'problem' => ['label' => 'Problema', 'bg' => 'bg-red-50',    'text' => 'text-red-700',    'dot' => 'bg-red-500'],

@@ -14,6 +14,7 @@ class ProfileController extends Controller
     public function show(string $username): View
     {
         $user = User::where('username', $username)
+            ->with('profile')
             ->withCount([
                 'friends',
                 'publications',
@@ -29,6 +30,6 @@ class ProfileController extends Controller
             'causes'        => $user->causes_count,
         ];
 
-        return view('profile', compact('user', 'stats'));
+        return view('profile-public', compact('user', 'stats'));
     }
 }

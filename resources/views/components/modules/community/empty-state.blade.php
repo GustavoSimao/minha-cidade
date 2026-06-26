@@ -1,4 +1,3 @@
-{{-- components/empty-state.blade.php --}}
 <div class="bg-white rounded-xl border border-dashed border-gray-200 py-14 flex flex-col items-center text-center gap-3 mt-3">
     <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
         <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

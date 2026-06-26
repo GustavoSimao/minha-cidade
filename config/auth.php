@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\User;
+use MinhaCidade\Identity\Models\User;
 
 return [
 

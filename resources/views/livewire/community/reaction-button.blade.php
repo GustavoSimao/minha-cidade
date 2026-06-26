@@ -1,5 +1,4 @@
 <div class="flex items-center gap-2">
-    {{-- Apoio --}}
     <button
         wire:click="react('support')"
         class="
@@ -21,7 +20,6 @@
         <span class="hidden sm:inline">apoio{{ $supportCount !== 1 ? 's' : '' }}</span>
     </button>
 
-    {{-- Não apoio --}}
     <button
         wire:click="react('oppose')"
         class="

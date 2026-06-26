@@ -1,13 +1,15 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use MinhaCidade\Identity\Http\Controllers\ProfileController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::view('/', 'welcome');
 
+Route::view('dashboard', 'dashboard')
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
-Route::get('/perfil/{username}', [ProfileController::class, 'show'])->name('profile.show');
+Route::view('profile', 'profile')
+    ->middleware(['auth'])
+    ->name('profile');
 
-
+require __DIR__.'/auth.php';

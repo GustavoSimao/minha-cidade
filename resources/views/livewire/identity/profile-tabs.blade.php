@@ -1,6 +1,5 @@
 <div class="mt-6">
 
-    {{-- Tab navigation --}}
     <div class="border-b border-gray-200 bg-white rounded-t-xl">
         <nav class="flex gap-1 px-4 pt-2" aria-label="Seções do perfil">
             @foreach([
@@ -21,26 +20,22 @@
                 "
                 aria-selected="{{ $activeTab === $tab['key'] ? 'true' : 'false' }}"
             >
-                <x-tab-icon :name="$tab['icon']" class="w-4 h-4" />
+                <x-modules.identity.tab-icon :name="$tab['icon']" class="w-4 h-4" />
                 {{ $tab['label'] }}
             </button>
             @endforeach
         </nav>
     </div>
 
-    {{-- Tab content --}}
     <div class="mt-0">
 
-        {{-- ──── PUBLICATIONS ──── --}}
         @if($activeTab === 'publications')
             <div class="space-y-3 pt-3">
                 @forelse($publications as $pub)
                     <article class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:border-gray-300 transition-colors">
                         <div class="flex gap-4 p-4">
-                            {{-- Content --}}
                             <div class="flex-1 min-w-0">
-                                {{-- Type badge --}}
-                                <x-publication-type-badge :type="$pub->type" />
+                                <x-modules.identity.publication-type-badge :type="$pub->type" />
 
                                 <h2 class="mt-2 font-semibold text-gray-900 leading-snug text-[15px]">
                                     <a href="/publicacao/{{ $pub->id }}" class="hover:text-brand-600 transition-colors">
@@ -49,16 +44,16 @@
                                 </h2>
                                 <p class="mt-1 text-sm text-gray-600 line-clamp-2">{{ $pub->body }}</p>
 
-                                {{-- Meta --}}
                                 <div class="mt-2 flex items-center gap-2 text-xs text-gray-400">
                                     <span>{{ $pub->created_at->diffForHumans() }}</span>
-                                    <span>•</span>
-                                    <span>{{ $pub->city->name }}, {{ $pub->city->state }}</span>
+                                    @if($pub->relationLoaded('city') && $pub->city)
+                                        <span>•</span>
+                                        <span>{{ $pub->city->name }}, {{ $pub->city->state }}</span>
+                                    @endif
                                 </div>
 
-                                {{-- Reactions row --}}
                                 <div class="mt-3 flex items-center gap-4">
-                                    <livewire:reaction-button
+                                    <livewire:community.reaction-button
                                         :publication="$pub"
                                         :key="'reactions-'.$pub->id"
                                     />
@@ -80,8 +75,7 @@
                                 </div>
                             </div>
 
-                            {{-- Thumbnail (first media) --}}
-                            @if($pub->media->isNotEmpty())
+                            @if(method_exists($pub, 'media') && $pub->relationLoaded('media') && $pub->media->isNotEmpty())
                                 <div class="hidden sm:block shrink-0">
                                     <img
                                         src="{{ $pub->media->first()->url }}"
@@ -94,7 +88,7 @@
                         </div>
                     </article>
                 @empty
-                    <x-empty-state
+                    <x-modules.community.empty-state
                         icon="document-text"
                         title="Nenhuma publicação ainda"
                         description="Quando {{ $user->first_name }} publicar algo, aparece aqui."
@@ -109,12 +103,10 @@
             </div>
         @endif
 
-        {{-- ──── EVENTS ──── --}}
         @if($activeTab === 'events')
             <div class="space-y-3 pt-3">
                 @forelse($events as $event)
                     <article class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex gap-4 hover:border-gray-300 transition-colors">
-                        {{-- Date chip --}}
                         <div class="shrink-0 flex flex-col items-center bg-brand-50 text-brand-700 rounded-lg px-3 py-2 w-14 text-center">
                             <span class="text-xs font-medium uppercase tracking-wide">{{ $event->starts_at->format('M') }}</span>
                             <span class="text-2xl font-bold leading-none">{{ $event->starts_at->format('d') }}</span>
@@ -142,7 +134,9 @@
                                     {{ $event->participants_count }} participante{{ $event->participants_count !== 1 ? 's' : '' }}
                                     @if($event->max_participants) / {{ $event->max_participants }} @endif
                                 </span>
-                                <span>{{ $event->city->name }}, {{ $event->city->state }}</span>
+                                @if($event->relationLoaded('city') && $event->city)
+                                    <span>{{ $event->city->name }}, {{ $event->city->state }}</span>
+                                @endif
                             </div>
                         </div>
                         <a href="/evento/{{ $event->id }}" class="shrink-0 self-center text-sm font-medium text-brand-600 hover:text-brand-700 transition-colors">
@@ -150,7 +144,7 @@
                         </a>
                     </article>
                 @empty
-                    <x-empty-state
+                    <x-modules.community.empty-state
                         icon="calendar"
                         title="Nenhum evento criado"
                         description="{{ $user->first_name }} ainda não organizou eventos."
@@ -163,22 +157,23 @@
             </div>
         @endif
 
-        {{-- ──── CAUSAS APOIADAS ──── --}}
         @if($activeTab === 'causes')
             <div class="space-y-3 pt-3">
                 @forelse($causes as $pub)
                     <article class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:border-gray-300 transition-colors">
                         <div class="flex gap-4 p-4">
                             <div class="flex-1 min-w-0">
-                                <x-publication-type-badge :type="$pub->type" />
+                                <x-modules.identity.publication-type-badge :type="$pub->type" />
                                 <h2 class="mt-2 font-semibold text-gray-900 text-[15px] leading-snug">
                                     <a href="/publicacao/{{ $pub->id }}" class="hover:text-brand-600 transition-colors">{{ $pub->title }}</a>
                                 </h2>
                                 <p class="mt-1 text-sm text-gray-600 line-clamp-2">{{ $pub->body }}</p>
                                 <div class="mt-2 flex items-center gap-2 text-xs text-gray-400">
                                     <span>por {{ $pub->is_anonymous ? 'Anônimo' : $pub->author->name }}</span>
-                                    <span>•</span>
-                                    <span>{{ $pub->city->name }}, {{ $pub->city->state }}</span>
+                                    @if($pub->relationLoaded('city') && $pub->city)
+                                        <span>•</span>
+                                        <span>{{ $pub->city->name }}, {{ $pub->city->state }}</span>
+                                    @endif
                                 </div>
                                 <div class="mt-3 flex items-center gap-1.5 text-sm text-brand-600 font-medium">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723..."/></svg>
@@ -193,7 +188,7 @@
                         </div>
                     </article>
                 @empty
-                    <x-empty-state
+                    <x-modules.community.empty-state
                         icon="heart"
                         title="Nenhuma causa apoiada"
                         description="{{ $user->first_name }} ainda não apoiou publicações."
@@ -205,7 +200,6 @@
             </div>
         @endif
 
-        {{-- ──── SOBRE ──── --}}
         @if($activeTab === 'about')
             <div class="mt-3 bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-5">
                 @if($user->bio)
@@ -238,7 +232,6 @@
                     </ul>
                 </div>
 
-                {{-- Neighborhoods the user is active in --}}
                 @if($user->activeNeighborhoods->isNotEmpty())
                     <div>
                         <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Bairros ativos</h3>
