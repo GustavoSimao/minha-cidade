@@ -1,0 +1,62 @@
+# Estrutura Supabase — Minha Cidade
+#
+# Um schema Postgres por bounded context (decisão D6 do plano):
+#   identity     -> perfis de usuário (espelha auth.users)
+#   geography    -> cidades e bairros (seed IBGE)
+#   publication  -> publicações e eventos
+#   engagement   -> reações, comentários, salvamentos
+#   social_graph -> amizades
+#   moderation   -> denúncias e ações de moderação
+#   notification -> notificações in-app
+#   analytics    -> snapshots (somente leitura pelo app; escrito pelo ETL Python)
+#   shared       -> tipos comuns, eventos de domínio, funções utilitárias
+#
+# Regras:
+# - Nunca criar tabela fora do schema do seu contexto.
+# - Nunca referenciar tabela de outro contexto em FK; integrar por ID + eventos (D7).
+# - Toda tabela com acesso de usuário final precisa de políticas RLS (ver docs/03-data/politica-rls.md).
+# - Migration é sempre aditiva e revisada; nomes no formato
+#   YYYYMMDDHHMMSS_<contexto>_<descricao>.sql
+
+# Configuração do Supabase CLI para desenvolvimento local (supabase start).
+# Referência: https://supabase.com/docs/guides/local-development/cli/config
+
+project_id = "minha-cidade"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public"]
+extra_search_path = ["public", "shared", "identity", "geography", "publication", "engagement", "social_graph", "moderation", "notification", "analytics"]
+
+[db]
+port = 54322
+major_version = 17
+
+[studio]
+enabled = true
+port = 54323
+
+[inbucket]
+port = 54324
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/auth/callback"]
+jwt_expiry = 3600
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+enable_confirmations = true
+
+[auth.external.google]
+enabled = true
+# client_id e secret vêm de variáveis de ambiente (nunca versionar):
+#   SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID
+#   SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET
+
+[storage]
+enabled = true
+file_size_limit = "10MiB"

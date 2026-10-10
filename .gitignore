@@ -1,0 +1,42 @@
+# dependências
+node_modules/
+.pnp
+.pnp.js
+
+# build
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# ambiente e segredos
+.env
+.env.local
+.env*.local
+.env.production
+
+# testes
+coverage/
+playwright-report/
+test-results/
+blob-report/
+.playwright/
+
+# sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# editores
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# logs
+npm-debug.log*
+yarn-error.log*
+
+# backups do repo anterior (manter fora do versionamento)
+*.bundle
