@@ -3,6 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import {
+  ResolveLocationSelection,
+} from "@/contexts/geography/application/use-cases";
+import { SupabaseCityRepository } from "@/contexts/geography/infrastructure/supabase/city-repository";
+import { SupabaseNeighborhoodRepository } from "@/contexts/geography/infrastructure/supabase/neighborhood-repository";
 import { CloseMyAccount, UpdateMyProfile } from "@/contexts/identity/application/use-cases";
 import { SupabaseAuthGateway } from "@/contexts/identity/infrastructure/supabase/auth-gateway";
 import { SupabaseProfileRepository } from "@/contexts/identity/infrastructure/supabase/profile-repository";
@@ -117,14 +122,27 @@ export async function updateProfileAction(
   _prev: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> {
+  const cityId = first(formData, "cityId") ? Number(first(formData, "cityId")) : null;
+  const neighborhoodId = first(formData, "neighborhoodId") || null;
+
+  // Geography: o bairro precisa pertencer à cidade (G4) e bairro é opcional (G6).
+  const location = await new ResolveLocationSelection(
+    new SupabaseCityRepository(),
+    new SupabaseNeighborhoodRepository(),
+  ).execute({ cityId, neighborhoodId });
+
+  if (!location.ok) {
+    return { error: location.error };
+  }
+
   const useCase = new UpdateMyProfile(new SupabaseProfileRepository(), new SupabaseAuthGateway());
 
   const result = await useCase.execute({
     fullName: first(formData, "fullName"),
     bio: first(formData, "bio") || null,
     phone: first(formData, "phone") || null,
-    cityId: first(formData, "cityId") ? Number(first(formData, "cityId")) : null,
-    neighborhoodId: first(formData, "neighborhoodId") || null,
+    cityId,
+    neighborhoodId,
   });
 
   if (!result.ok) {

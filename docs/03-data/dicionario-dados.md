@@ -17,8 +17,8 @@ e já incorpora as correções de modelagem necessárias.
 | | `role` | text check in ('user','moderator','admin') | atribuído só por admin (`service_role`) |
 | | `verified_org` | text | nome do órgão; preenchido **somente** com selo institucional (P13) |
 | | `is_verified` | boolean default false | espelho do selo: `true` quando `verified_org` não é nulo |
-| | `city_id` | bigint | ID externo (sem FK cross-schema; FK criada na Fase 3) |
-| | `neighborhood_id` | uuid | ID externo; opcional fora dos municípios curados |
+| | `city_id` | bigint | ID externo; FK para `geography.cities(id)` criada na Fase 3 |
+| | `neighborhood_id` | uuid | ID externo; opcional fora dos municípios curados; FK composta `(neighborhood_id, city_id)` → `geography.neighborhoods (id, city_id)` (G4) |
 | | `termos_aceitos_em` | timestamptz | aceite dos termos/privacidade (P22); privado |
 | | `created_at`/`updated_at` | timestamptz | |
 
@@ -30,14 +30,23 @@ e já incorpora as correções de modelagem necessárias.
 
 | Tabela | Coluna | Tipo | Observação |
 |---|---|---|---|
-| `cities` | `id` | bigint (código IBGE) | 5.570 municípios + 27 UFs no seed |
-| | `uf` | char(2) | |
-| | `name` | text | |
-| | `slug` | text unique | |
-| `neighborhoods` | `id` | uuid | criado pela comunidade, normalizado |
-| | `city_id` | bigint | |
-| | `name`/`slug` | text | `unique (city_id, slug)` |
+| `cities` | `id` | bigint (PK, código IBGE) | 5.571 municípios + 27 UFs no seed (API IBGE em 2026-10-10) |
+| | `uf` | char(2) check (27 siglas) | |
+| | `name` | text | nome oficial com acentos |
+| | `slug` | text unique | `nome-uf` normalizado (G2) |
+| | `ibge_synced_at` | timestamptz | última sincronização com a API |
+| | `created_at` | timestamptz | |
+| `neighborhoods` | `id` | uuid | |
+| | `city_id` | bigint → `cities(id)` | |
+| | `name`/`slug` | text | `unique (city_id, slug)` (G3) |
+| | `source` | text check | `ibge_subdistritos` \| `lei_4772_2010` \| `lc_171_2025` (G8) |
+| | `source_url` | text | URL da fonte oficial |
 | | `lat`/`lng` | double precision | opcional (evolução para raio) |
+| | `created_at` | timestamptz | |
+
+RLS: leitura pública (`anon`/`authenticated`); escrita somente `service_role` (G5).
+Seed: `ibge-localidades.sql` (IBGE, gerado) + `bairros-cariacica.sql` (100 bairros de
+Cariacica/ES, fonte LC 171/2025).
 
 ## publication
 

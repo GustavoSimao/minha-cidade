@@ -9,6 +9,7 @@ import {
   type AuthFormState,
 } from "@/contexts/identity/interfaces/actions";
 import { Alert, Button, Card, TextField } from "@/shared/ui/form";
+import { LocationPicker } from "@/shared/ui/location-picker";
 
 /** Dados do perfil próprio necessários ao formulário. */
 export interface OwnProfileFormData {
@@ -17,7 +18,11 @@ export interface OwnProfileFormData {
   bio: string | null;
   phone: string | null;
   cityId: number | null;
+  cityName: string | null;
+  cityUf: string | null;
   neighborhoodId: string | null;
+  /** Cidade de lançamento (atalho no seletor, P12). */
+  launchCity: { id: number; name: string; uf: string; slug: string } | null;
   isVerified: boolean;
   verifiedOrg: string | null;
   role: string;
@@ -65,6 +70,19 @@ export function ProfileForm({ profile }: { profile: OwnProfileFormData }) {
             rows={4}
           />
         </div>
+
+        <fieldset className="flex flex-col gap-3">
+          <legend className="text-sm font-medium text-text-strong">
+            Onde você mora (usado no feed do bairro)
+          </legend>
+          <LocationPicker
+            initialCityId={profile.cityId}
+            initialCityName={profile.cityName}
+            initialCityUf={profile.cityUf}
+            initialNeighborhoodId={profile.neighborhoodId}
+            launchCity={profile.launchCity}
+          />
+        </fieldset>
 
         {state.error ? <Alert tone="error">{state.error}</Alert> : null}
         {state.message ? <Alert tone="success">{state.message}</Alert> : null}

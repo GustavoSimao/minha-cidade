@@ -45,7 +45,7 @@ tests/e2e/                 testes Playwright (viewports mobile/desktop) — cria
 docs/                      fonte da verdade (ver acima)
 ```
 
-## Rotas implementadas (Fase 2 — Identity & Access)
+## Rotas implementadas
 
 | Rota | O que faz |
 |---|---|
@@ -54,7 +54,9 @@ docs/                      fonte da verdade (ver acima)
 | `/login`, `/cadastro` | entrar e cadastrar (Google ou e-mail/senha, com aceite dos termos) |
 | `/auth/callback` | callback do OAuth do Google |
 | `/perfil/{username}` | perfil público (projeção sem e-mail/telefone) |
-| `/perfil/editar` | editar o próprio perfil e encerrar conta |
+| `/perfil/editar` | editar o próprio perfil (com seletor cidade → bairro) e encerrar conta |
+| `/api/geography/cities` | busca de cidades do catálogo IBGE (leitura pública) |
+| `/api/geography/neighborhoods` | bairros de uma cidade (leitura pública) |
 | `/termos`, `/privacidade` | mínimo legal (P22) |
 | `/transparencia` | placeholder de métricas (implementado na Fase 10) |
 
@@ -80,17 +82,22 @@ npm run build --prefix apps/web
 ## Configuração do Supabase (manual, uma vez)
 
 1. Criar projeto em <https://supabase.com/dashboard> (Postgres 17).
-2. Aplicar a migration da Fase 2: rodar
-   `supabase/migrations/20261010000001_identity_create_profiles.sql` no SQL Editor (ou
-   `supabase db push` com a CLI). Ela cria os schemas `shared` e `identity`, a tabela
-   `identity.profiles`, os triggers e as políticas RLS. Os demais schemas chegam nas
-   Fases 3+.
+2. Aplicar as migrations na ordem: rodar
+   `supabase/migrations/20261010000001_identity_create_profiles.sql` e
+   `supabase/migrations/20261011000002_geography_create_cities_neighborhoods.sql`
+   no SQL Editor (ou `supabase db push` com a CLI). A primeira cria os schemas
+   `shared`/`identity`, a tabela `identity.profiles`, os triggers e as políticas RLS;
+   a segunda cria o schema `geography` (cidades e bairros) e as FKs de localização em
+   `identity.profiles`. Os demais schemas chegam nas Fases 4+.
 3. Em **Authentication → Providers**, ativar Google (preencher Client ID/Secret do Google
    Cloud) e manter e-mail/senha com confirmação ativa.
 4. Em **Authentication → URL Configuration**, adicionar
    `http://localhost:3000/auth/callback` (e o domínio final em produção) como redirect.
 5. Em **Storage**, criar os buckets `avatars`, `covers` e `publication-media`.
 6. Copiar `Project URL`, `anon key` e `service_role key` para `apps/web/.env.local`.
+7. Rodar os seeds em `supabase/seed/` (ordem em `supabase/seed/README.md`):
+   `ibge-localidades.sql` (5.571 municípios IBGE) e `bairros-cariacica.sql`
+   (100 bairros de Cariacica/ES, fonte oficial LC 171/2025).
 
 ## Deploy (Vercel)
 
@@ -98,7 +105,8 @@ npm run build --prefix apps/web
 2. Variáveis de ambiente de produção: as mesmas de `.env.local`, com
    `NEXT_PUBLIC_SITE_URL` apontando para o domínio final.
 3. Deploy automático por push; preview por pull request.
-4. O Git local já está inicializado; falta o commit inicial quando você autorizar.
+4. O repositório Git local já tem o commit inicial (branch `main`); falta criar o
+   repositório no GitHub e conectar o remote para o primeiro push.
 
 ## Status das fases
 
@@ -108,7 +116,8 @@ npm run build --prefix apps/web
 | 1 — documentos de fundação | concluída |
 | Decisões de produto P1–P22 | concluídas |
 | 2 — Identity & Access | concluída (código + migration; falta aplicar no Supabase) |
-| 3 a 12 | pendentes (ver `docs/plano-reescrita-ddd.md`) |
+| 3 — Geography | concluída (spec, migration, seeds IBGE + bairros de Cariacica, APIs e seletor em cascata; falta aplicar no Supabase) |
+| 4 a 12 | pendentes (ver `docs/plano-reescrita-ddd.md`) |
 
 ## Camada de dados (repo separado)
 

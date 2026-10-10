@@ -204,7 +204,8 @@ ver perfil público por URL; encerrar conta.
 ## 10. Dependências e o que fica para outras fases
 
 - **Depende de:** Supabase Auth (D2); `geography.cities`/`neighborhoods` para cidade/bairro
-  — na Fase 2 as colunas existem **sem FK**; a FK é criada na migration de Geography.
+  — as FKs foram criadas na migration de Geography (Fase 3): `city_id` simples e
+  `(neighborhood_id, city_id)` composta, que também garante G4 (bairro pertence à cidade).
 - **Fica para a Fase 3:** UI de seleção cidade → bairro em cascata.
 - **Fica para a Fase 4:** anonimização das publicações no encerramento de conta
   (a parte de Identity — apagar perfil e dados próprios — está pronta na Fase 2; a

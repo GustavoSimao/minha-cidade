@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+import { ResolveLocationSelection } from "@/contexts/geography/application/use-cases";
+import { SupabaseCityRepository } from "@/contexts/geography/infrastructure/supabase/city-repository";
+import { SupabaseNeighborhoodRepository } from "@/contexts/geography/infrastructure/supabase/neighborhood-repository";
 import { SupabaseAuthGateway } from "@/contexts/identity/infrastructure/supabase/auth-gateway";
 import { SupabaseProfileRepository } from "@/contexts/identity/infrastructure/supabase/profile-repository";
 import { Alert } from "@/shared/ui/form";
@@ -12,6 +15,9 @@ import {
 } from "@/shared/ui/profile-forms";
 
 export const metadata: Metadata = { title: "Meu perfil" };
+
+/** Código IBGE de Cariacica/ES — município de lançamento (P12). */
+const LAUNCH_CITY_ID = 3201308;
 
 // Página protegida: depende da sessão e do perfil do usuário.
 export const instant = false;
@@ -34,13 +40,31 @@ export default async function EditProfilePage() {
     );
   }
 
+  // Nomes da localização para exibição (Geography resolve IDs — D7).
+  const location = await new ResolveLocationSelection(
+    new SupabaseCityRepository(),
+    new SupabaseNeighborhoodRepository(),
+  ).execute({ cityId: profile.cityId, neighborhoodId: profile.neighborhoodId });
+
+  const launchCity = await new SupabaseCityRepository().findById(LAUNCH_CITY_ID);
+
   const formData: OwnProfileFormData = {
     username: profile.username.value,
     fullName: profile.fullName.value,
     bio: profile.toPublicView(new Date()).bio,
     phone: profile.phone,
     cityId: profile.cityId,
+    cityName: location.ok ? location.value.cityName : null,
+    cityUf: location.ok ? location.value.cityUf : null,
     neighborhoodId: profile.neighborhoodId,
+    launchCity: launchCity
+      ? {
+          id: launchCity.id.value,
+          name: launchCity.name,
+          uf: launchCity.uf.sigla,
+          slug: launchCity.slug.value,
+        }
+      : null,
     isVerified: profile.isVerified,
     verifiedOrg: profile.verifiedOrg?.name ?? null,
     role: profile.role.name,

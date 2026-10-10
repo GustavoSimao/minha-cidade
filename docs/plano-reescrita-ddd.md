@@ -11,10 +11,11 @@ Plano de execução para o produto "Minha Cidade" (participação cidadã: probl
 > | Fase 1 — documentos de fundação | **concluído** — `docs/00-product`, `01-process`, `02-design` (C4 + design system + ADRs), `03-data`, `04-contexts` |
 > | **Decisões de produto P1–P22** | **concluídas** (2026-10-10) — registradas na seção 2 deste documento e nas ADRs 0015–0021 |
 > | Fase 2 — Identity & Access | **concluído** — spec `docs/04-contexts/identity-access.md`; migration `20261010000001_identity_create_profiles.sql`; domínio com 22 testes; `@supabase/ssr` + proxy (`src/proxy.ts`); rotas `/auth/callback`, `/login`, `/cadastro`, `/perfil/{username}`, `/perfil/editar`; termos e privacidade. Falta aplicar a migration no projeto Supabase (ação manual) |
-> | Fases 3 a 12 | pendentes — uma bounded context por fase, spec → migration → domínio → aplicação → infraestrutura → tela → teste |
+> | Fase 3 — Geography | **concluído** — spec `docs/04-contexts/geography.md`; migration `20261011000002_geography_create_cities_neighborhoods.sql` (tabelas + FKs em `identity.profiles`); seeds `supabase/seed/ibge-localidades.sql` (5.571 municípios IBGE, idempotente) e `bairros-cariacica.sql` (100 bairros, fonte oficial LC 171/2025 com transcrição+hash em `sources/`); domínio com 22 testes + 13 de caso de uso; rotas `/api/geography/cities` e `/api/geography/neighborhoods`; seletor cascata cidade → bairro em `/perfil/editar`. Falta aplicar as migrations e rodar os seeds (ação manual) |
+> | Fases 4 a 12 | pendentes — uma bounded context por fase, spec → migration → domínio → aplicação → infraestrutura → tela → teste |
 >
-> Próximo passo: **Fase 3 — Geography** (seed IBGE de cidades/UF + bairros curados de
-> Cariacica com fonte oficial registrada, e a seleção cidade → bairro em cascata).
+> Próximo passo: **Fase 4 — Publication + feed** (publicar problema/ideia com mídia e
+> anonimato; feed público paginado por bairro/cidade).
 
 > **ATENÇÃO — único artefato sobrevivente:** o repo Laravel foi deletado e apenas este documento (com o Apêndice A) preserva o conhecimento do sistema anterior.
 

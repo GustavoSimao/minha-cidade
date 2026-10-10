@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { ResolveLocationSelection } from "@/contexts/geography/application/use-cases";
+import { SupabaseCityRepository } from "@/contexts/geography/infrastructure/supabase/city-repository";
+import { SupabaseNeighborhoodRepository } from "@/contexts/geography/infrastructure/supabase/neighborhood-repository";
 import { SupabaseProfileRepository } from "@/contexts/identity/infrastructure/supabase/profile-repository";
 import { publicStorageUrl } from "@/contexts/identity/infrastructure/supabase/storage";
 import { Avatar } from "@/shared/ui/avatar";
@@ -27,6 +30,27 @@ export default async function PublicProfilePage({ params }: PageParams) {
   const created = new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(
     profile.createdAt,
   );
+
+  // Geography resolve os IDs da localização para nomes (integração por ID — D7).
+  // Falha de leitura do catálogo não derruba o perfil: a localização é opcional.
+  let locationLabel: string | null = null;
+  try {
+    const location = await new ResolveLocationSelection(
+      new SupabaseCityRepository(),
+      new SupabaseNeighborhoodRepository(),
+    ).execute({
+      cityId: profile.cityId,
+      neighborhoodId: profile.neighborhoodId,
+    });
+
+    if (location.ok && location.value.cityName) {
+      locationLabel = [location.value.cityName, location.value.neighborhoodName]
+        .filter((part): part is string => part !== null)
+        .join(" — ");
+    }
+  } catch {
+    locationLabel = null;
+  }
 
   return (
     <article className="overflow-hidden rounded-card border border-border-subtle bg-surface-raised shadow-sm">
@@ -80,6 +104,10 @@ export default async function PublicProfilePage({ params }: PageParams) {
         <p className="mt-3 text-sm text-text-muted">
           Membro desde {created}
         </p>
+
+        {locationLabel ? (
+          <p className="mt-1 text-sm text-text-muted">{locationLabel}</p>
+        ) : null}
 
         <p className="mt-6 text-sm text-text-muted">
           Publicações, amigos e demais conteúdos do perfil aparecem aqui conforme as
