@@ -43,6 +43,7 @@ migration de `supabase/migrations/` materializa o schema descrito.
 |---|---|---|
 | Identity & Access | [`identity-access.md`](identity-access.md) | **concluído** (Fase 2) |
 | Geography | [`geography.md`](geography.md) | **concluído** (Fase 3 — código + migration + seeds; falta aplicar no Supabase) |
+| Publication | [`publication.md`](publication.md) | **concluído** (Fase 4 — código + migration; falta aplicar no Supabase) |
 | Publication | [`publication.md`](publication.md) | pendente (Fase 4) |
 | Engagement | [`engagement.md`](engagement.md) | pendente (Fase 5) |
 | Social Graph | [`social-graph.md`](social-graph.md) | pendente (Fase 6) |

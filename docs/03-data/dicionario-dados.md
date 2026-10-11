@@ -53,7 +53,7 @@ Cariacica/ES, fonte LC 171/2025).
 | Tabela | Coluna | Tipo | Observação |
 |---|---|---|---|
 | `publications` | `id` | uuid | |
-| | `author_id` | uuid, **anulável** | dono; `NULL` quando a conta foi encerrada (P4); **nunca** exposto quando `is_anonymous` |
+| | `author_id` | uuid, **anulável** | dono; `NULL` quando a conta foi encerrada (anonimizado por trigger — I8/P4); **nunca** exposto quando `is_anonymous` |
 | | `type` | enum `problem` \| `idea` | |
 | | `title`/`content` | text | |
 | | `is_anonymous` | boolean default false | |
@@ -63,6 +63,13 @@ Cariacica/ES, fonte LC 171/2025).
 | | `hidden_at`/`hidden_by` | timestamptz/uuid | moderação (exclusão lógica, reversível) |
 | `publication_media` | `publication_id`, `path`, `position`, `kind` | | até 3 imagens; Storage `publication-media` |
 | `events` (v2, documentado) | `publication_id`, `starts_at`, `ends_at`, `location`, `kind`, `external_link`, `max_participants`, `price` | | fora de escopo na v1 |
+
+RLS: leitura pública (`anon`/`authenticated`); `insert`/`update` só do dono
+(`auth.uid() = author_id`); ocultar/restaurar (`hidden_at`/`hidden_by`) só `service_role`
+(moderação); sem `delete` via API (P8). Trigger `publications_enforce_writes` mantém autor
+e tipo imutáveis (P1/P4/P7); trigger `publications_anonymize_on_profile_delete` anonimiza
+as publicações quando a conta é encerrada (I8). FK composta
+`(neighborhood_id, city_id) → geography.neighborhoods (id, city_id)` (G4/P6).
 
 ## engagement
 
@@ -104,5 +111,5 @@ Cariacica/ES, fonte LC 171/2025).
 
 | Objeto | Uso |
 |---|---|
-| `shared.domain_events` | eventos de domínio (`context`, `name`, `payload`, `occurred_at`) |
+| `shared.domain_events` | eventos de domínio (`context`, `name`, `payload`, `occurred_at`) — outbox publicado a partir da Fase 4 |
 | `shared.app_metadata` | versão do seed IBGE, versão do schema |

@@ -62,8 +62,39 @@ export class SupabaseProfileRepository implements ProfileRepository {
     };
   }
 
-  async findById(id: string): Promise<Profile | null> {
+  async findPublicViewsByIds(ids: readonly string[]): Promise<PublicProfileView[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+
     const supabase = await createClient();
+
+    const { data, error } = await supabase
+      .from("identity.profiles")
+      .select(PUBLIC_COLUMNS)
+      .in("id", [...ids]);
+
+    if (error) {
+      throw new Error(`falha ao buscar perfis: ${error.message}`);
+    }
+
+    return ((data ?? []) as unknown as ProfileRow[]).map((row) => ({
+      id: row.id,
+      username: row.username,
+      fullName: row.full_name,
+      bio: row.bio,
+      avatarPath: row.avatar_path,
+      coverPath: row.cover_path,
+      role: row.role,
+      verifiedOrg: row.verified_org,
+      isVerified: row.is_verified,
+      cityId: row.city_id,
+      neighborhoodId: row.neighborhood_id,
+      createdAt: new Date(row.created_at),
+    }));
+  }
+
+  async findById(id: string): Promise<Profile | null> {    const supabase = await createClient();
 
     const { data, error } = await supabase
       .from("identity.profiles")

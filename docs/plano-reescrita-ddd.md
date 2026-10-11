@@ -12,10 +12,11 @@ Plano de execução para o produto "Minha Cidade" (participação cidadã: probl
 > | **Decisões de produto P1–P22** | **concluídas** (2026-10-10) — registradas na seção 2 deste documento e nas ADRs 0015–0021 |
 > | Fase 2 — Identity & Access | **concluído** — spec `docs/04-contexts/identity-access.md`; migration `20261010000001_identity_create_profiles.sql`; domínio com 22 testes; `@supabase/ssr` + proxy (`src/proxy.ts`); rotas `/auth/callback`, `/login`, `/cadastro`, `/perfil/{username}`, `/perfil/editar`; termos e privacidade. Falta aplicar a migration no projeto Supabase (ação manual) |
 > | Fase 3 — Geography | **concluído** — spec `docs/04-contexts/geography.md`; migration `20261011000002_geography_create_cities_neighborhoods.sql` (tabelas + FKs em `identity.profiles`); seeds `supabase/seed/ibge-localidades.sql` (5.571 municípios IBGE, idempotente) e `bairros-cariacica.sql` (100 bairros, fonte oficial LC 171/2025 com transcrição+hash em `sources/`); domínio com 22 testes + 13 de caso de uso; rotas `/api/geography/cities` e `/api/geography/neighborhoods`; seletor cascata cidade → bairro em `/perfil/editar`. Falta aplicar as migrations e rodar os seeds (ação manual) |
-> | Fases 4 a 12 | pendentes — uma bounded context por fase, spec → migration → domínio → aplicação → infraestrutura → tela → teste |
+> | Fase 4 — Publication + feed | **concluído** — spec `docs/04-contexts/publication.md`; migration `20261011000003_publication_create_publications.sql` (tabelas, RLS, triggers de invariantes e anonimização no encerramento de conta, outbox `shared.domain_events`); domínio com 28 testes e 14 de caso de uso; Route Handler `/api/publications/media` (magic bytes WebP ≤ 10 MiB); formulário com redimensionamento WebP no cliente; `/publicar`, `/feed` paginado e `/publicacao/{id}` com edição/apagamento. Falta aplicar a migration no projeto Supabase (ação manual) |
+> | Fases 5 a 12 | pendentes — uma bounded context por fase, spec → migration → domínio → aplicação → infraestrutura → tela → teste |
 >
-> Próximo passo: **Fase 4 — Publication + feed** (publicar problema/ideia com mídia e
-> anonimato; feed público paginado por bairro/cidade).
+> Próximo passo: **Fase 5 — Engagement** (reações de apoio/oposição com toggle, comentários
+> e salvamentos, contadores em tempo real; ver `docs/04-contexts/README.md`).
 
 > **ATENÇÃO — único artefato sobrevivente:** o repo Laravel foi deletado e apenas este documento (com o Apêndice A) preserva o conhecimento do sistema anterior.
 

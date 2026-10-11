@@ -43,6 +43,12 @@ export async function SiteHeader() {
           {session ? (
             <>
               <Link
+                className="inline-flex min-h-11 items-center rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-700"
+                href="/publicar"
+              >
+                Publicar
+              </Link>
+              <Link
                 className="rounded-lg px-3 py-2 text-text-body hover:bg-brand-50 hover:text-brand-700"
                 href={username ? `/perfil/${username}` : "/perfil/editar"}
               >

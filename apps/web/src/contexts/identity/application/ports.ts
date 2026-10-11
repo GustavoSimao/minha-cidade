@@ -27,6 +27,12 @@ export interface ProfileRepository {
   /** Projeção pública do perfil por username (I7) ou `null` se não existir. */
   findPublicViewByUsername(username: string): Promise<PublicProfileView | null>;
 
+  /**
+   * Projeções públicas em lote por ids (I7) — usada pelo feed de publicações
+   * para exibir autores identificados ( publicação anônima não chega aqui ).
+   */
+  findPublicViewsByIds(ids: readonly string[]): Promise<PublicProfileView[]>;
+
   /** Perfil completo do dono (somente próprio uso). */
   findById(id: string): Promise<Profile | null>;
 

@@ -1,11 +1,13 @@
 import { cn } from "./cn";
 
-type BadgeTone = "institutional" | "moderation" | "neutral";
+type BadgeTone = "institutional" | "moderation" | "neutral" | "problem" | "idea";
 
 const TONES: Record<BadgeTone, string> = {
   institutional: "bg-brand-50 text-brand-700 border-brand-100",
   moderation: "bg-amber-50 text-warning border-amber-100",
   neutral: "bg-surface text-text-muted border-border-subtle",
+  problem: "bg-red-50 text-danger border-red-100",
+  idea: "bg-green-50 text-success border-green-100",
 };
 
 /** Etiqueta compacta usada em selo institucional, tipo de publicação etc. */

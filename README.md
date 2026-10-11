@@ -57,6 +57,9 @@ docs/                      fonte da verdade (ver acima)
 | `/perfil/editar` | editar o próprio perfil (com seletor cidade → bairro) e encerrar conta |
 | `/api/geography/cities` | busca de cidades do catálogo IBGE (leitura pública) |
 | `/api/geography/neighborhoods` | bairros de uma cidade (leitura pública) |
+| `/publicar` | formulário de publicação (problema/ideia, fotos, anonimato) |
+| `/publicacao/{id}` | publicação com leitura pública (anonimato preservado); editar/apagar quando é o autor |
+| `/api/publications/media` | upload de imagem WebP (P5 — magic bytes no servidor; Route Handler por causa dos 10 MiB) |
 | `/termos`, `/privacidade` | mínimo legal (P22) |
 | `/transparencia` | placeholder de métricas (implementado na Fase 10) |
 
@@ -83,12 +86,15 @@ npm run build --prefix apps/web
 
 1. Criar projeto em <https://supabase.com/dashboard> (Postgres 17).
 2. Aplicar as migrations na ordem: rodar
-   `supabase/migrations/20261010000001_identity_create_profiles.sql` e
-   `supabase/migrations/20261011000002_geography_create_cities_neighborhoods.sql`
+   `supabase/migrations/20261010000001_identity_create_profiles.sql`,
+   `supabase/migrations/20261011000002_geography_create_cities_neighborhoods.sql` e
+   `supabase/migrations/20261011000003_publication_create_publications.sql`
    no SQL Editor (ou `supabase db push` com a CLI). A primeira cria os schemas
    `shared`/`identity`, a tabela `identity.profiles`, os triggers e as políticas RLS;
    a segunda cria o schema `geography` (cidades e bairros) e as FKs de localização em
-   `identity.profiles`. Os demais schemas chegam nas Fases 4+.
+   `identity.profiles`; a terceira cria o schema `publication` (publicações, mídia,
+   triggers de invariantes e o outbox `shared.domain_events`). Os demais schemas chegam
+   nas Fases 5+.
 3. Em **Authentication → Providers**, ativar Google (preencher Client ID/Secret do Google
    Cloud) e manter e-mail/senha com confirmação ativa.
 4. Em **Authentication → URL Configuration**, adicionar
@@ -117,7 +123,8 @@ npm run build --prefix apps/web
 | Decisões de produto P1–P22 | concluídas |
 | 2 — Identity & Access | concluída (código + migration; falta aplicar no Supabase) |
 | 3 — Geography | concluída (spec, migration, seeds IBGE + bairros de Cariacica, APIs e seletor em cascata; falta aplicar no Supabase) |
-| 4 a 12 | pendentes (ver `docs/plano-reescrita-ddd.md`) |
+| 4 — Publication + feed | concluída (spec, migration, publicar/editar/apagar, upload WebP, feed paginado; falta aplicar no Supabase) |
+| 5 a 12 | pendentes (ver `docs/plano-reescrita-ddd.md`) |
 
 ## Camada de dados (repo separado)
 
