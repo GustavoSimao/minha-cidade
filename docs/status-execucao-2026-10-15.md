@@ -1,27 +1,33 @@
 # Status de execução — 2026-10-15 (handover para a próxima sessão)
 
-> Snapshot às ~03:55. Continua `docs/status-execucao-2026-10-14.md` (T4/T5/T6) e
-> `docs/status-design-2026-10-12.md` (Lighthouse). Planos com registro de execução:
-> `.kilo/plans/1792020880261` (T4→Fase 3), `.kilo/plans/1792036500000` (feed na raiz),
-> `.kilo/plans/1792042800000` (selo em comentários + solicitação de selo).
+> Snapshot às ~18:50 (fim do dia). Continua `docs/status-execucao-2026-10-14.md`
+> (T4/T5/T6) e `docs/status-design-2026-10-12.md` (Lighthouse). Planos com registro
+> de execução: `.kilo/plans/1792020880261` (T4→Fase 3),
+> `.kilo/plans/1792036500000` (feed na raiz), `.kilo/plans/1792042800000`
+> (selo em comentários + solicitação de selo).
 
-## Estado do repositório
+## Estado do repositório (após os commits do dia)
 
-- Branch `main`, **nada commitado desde `1e373a3`** (12/10) — 146 arquivos
-  modificados/novos no working tree (contextos Analytics/Engagement/Moderation/
-  Notification/Social-Graph, migration `20261016000011`, telas admin/amigos/
-  notificacoes/salvos/transparencia, etc.). Último commit de código: `9014847`
-  (Publication, 10/10).
-- **Commits seguem pendentes** — regra combinada: só após o "ok, roda" do usuário,
-  um por contexto (`feat(publication)`, `feat(identity)`, `feat(moderation)`,
-  `feat(social-graph)`, `docs:`…).
-- Ambiente no ar: **dev server em http://localhost:3000** (processo da sessão
-  anterior — se caiu, `npm run dev --prefix apps/web`), Docker/Supabase local
-  (`supabase status`), `apps/web/.env.local` com as chaves atuais.
-- Banco: `supabase db reset` aplicado às ~03:30 — migrations até
-  `20261016000011` + seed com **13 usuários** (novo: `secretaria@minhacidade.dev`,
-  com uma solicitação de selo **pendente** para a demo B2G). Senha única do seed:
-  `Cidade@123`.
+- **18 commits em `main` sobre `1e373a3`** — 217 arquivos, +22.930 linhas. Um por
+  contexto: `chore(platform)`, `feat(identity)`, `feat(geography)`,
+  `feat(publication)`, `feat(engagement)`, `feat(social-graph)` (+migration),
+  `feat(moderation)`, `feat(notification)`, `feat(analytics)`, `feat(pwa)`,
+  `feat(ui)`, `docs`, `chore(kilo)`, `fix(publication)` (RLS do soft-delete),
+  `refactor(seed)` (renomes 01/02).
+- **Push NÃO feito** — `git push` quando quiser (origem já configurada).
+- `.env.local`, `.next`, `test-results` fora do versionamento;
+  `supabase/.branches/` e `supabase/.temp/` (estado do CLI) no `.gitignore`.
+- **Ambiente desligado** (shutdown a pedido): dev server parado, stack Supabase
+  parada, Docker Desktop parado. Para retomar:
+  `docker desktop start` → `npx supabase start` (ou `npm run setup:local`) →
+  `npm run dev --prefix apps/web` (porta 3000). O banco persiste no volume; se
+  quiser o estado do seed de novo: `npx supabase db reset`.
+- Último estado do banco antes do shutdown: migrations até `20261016000011` +
+  seed com **13 usuários** (inclui `secretaria@minhacidade.dev` com pedido de
+  selo **pendente** para a demo B2G). Senha única do seed: `Cidade@123`.
+- Validação no estado commitado: **unit 240/240**, lint/typecheck limpos,
+  build verde, e2e **104/104** (rodada antes dos commits; nada em `src/` mudou
+  desde então).
 
 ## Feito nesta sessão (2026-10-15, validado)
 
