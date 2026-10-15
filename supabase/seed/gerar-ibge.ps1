@@ -67,7 +67,9 @@ on conflict (id) do update set
 --   select uf, count(*) from geography.cities group by uf order by uf;       -- 27 linhas
 "@
 
-$out = Join-Path $PSScriptRoot "ibge-localidades.sql"
+$out = Join-Path $PSScriptRoot "01-ibge-localidades.sql"
+# Prefixo 01-: o `supabase db reset` roda os seeds em ordem alfabética e o catálogo
+# de cidades precisa existir antes dos bairros (02-bairros-cariacica.sql).
 # UTF-8 sem BOM (BOM quebraria a execução do SQL).
 [System.IO.File]::WriteAllText($out, $sql, (New-Object System.Text.UTF8Encoding($false)))
 

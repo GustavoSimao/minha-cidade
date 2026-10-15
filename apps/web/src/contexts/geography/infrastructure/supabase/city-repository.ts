@@ -4,7 +4,7 @@ import type {
   CityRepository,
   CityRow,
 } from "@/contexts/geography/application/ports";
-import { createClient } from "@/shared/infrastructure/supabase";
+import { createClient, table } from "@/shared/infrastructure/supabase";
 
 function toDomain(row: CityRow): City {
   return City.create({
@@ -24,8 +24,7 @@ export class SupabaseCityRepository implements CityRepository {
     const supabase = await createClient();
     const limit = options?.limit ?? 10;
 
-    let query = supabase
-      .from("geography.cities")
+    let query = table(supabase, "geography.cities")
       .select("id, uf, name, slug, ibge_synced_at")
       .or(`name.ilike.%${term}%,slug.ilike.%${term}%`)
       .limit(limit);
@@ -46,8 +45,7 @@ export class SupabaseCityRepository implements CityRepository {
   async findById(id: number): Promise<City | null> {
     const supabase = await createClient();
 
-    const { data, error } = await supabase
-      .from("geography.cities")
+    const { data, error } = await table(supabase, "geography.cities")
       .select("id, uf, name, slug, ibge_synced_at")
       .eq("id", id)
       .maybeSingle();

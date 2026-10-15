@@ -79,3 +79,36 @@ unique (city_id, slug)
 - Bairros de Cariacica: contagem confere com a lei (100 bairros na Lei 4772/2010, com as
   inclusões posteriores registradas em `source`).
 - Teste: bairro duplicado na mesma cidade falha pelo `unique (city_id, slug)`.
+
+## 6. Runbook — curar os bairros de um novo município (G3/G6)
+
+Quando uma cidade ganha demanda (moradores publicando nela), a curadoria deixa o
+bairro opcional ("Bairro não informado") e passa a ser obrigatório. O passo a passo
+operacional completo (fonte → transcrição + hash → seed idempotente → contagem →
+verificação no app) está em
+[`runbook-curadoria-bairros.md`](./runbook-curadoria-bairros.md). Resumo:
+
+1. **Achar a fonte oficial.** Bairro é lei municipal: plano diretor, lei de
+   delimitação ou mapa official da prefeitura. IBGE **não** serve (ver §1).
+   Registrar URL e data do documento.
+2. **Preservar a fonte.** Copiar o documento para `supabase/seed/sources/`. PDF
+   gigante (como os 54 MB da LC 171/2025 de Cariacica) fica só com URL + hash;
+   a transcrição em `.txt` é versionada.
+3. **Escrever o seed.** Novo arquivo `supabase/seed/NN-bairros-<cidade>.sql`
+   somando à lista em `config.toml` (`db.seed.sql_paths`) **na ordem** (IBGE →
+   bairros → dev). Padrão idêntico ao `02-bairros-cariacica.sql`:
+   `insert ... on conflict (city_id, slug) do nothing`, com `source` e
+   `source_url` preenchidos em **todas** as linhas.
+4. **Registrar proveniência** em `shared.app_metadata`: chave
+   `seed.<cidade>.bairros` com `fonte`, `data` e `hash` (SHA-256 do documento).
+5. **Aplicar e verificar.** `npx supabase db reset` e conferir:
+   `select count(*) from geography.neighborhoods where city_id = <IBGE>;`
+   contra a contagem da lei. divergência = fonte incompleta — não inventar linha.
+6. **Verificar no app.** `/publicar` na cidade mostra os bairros na ordem do
+   seed; publicações antigas da cidade **sem** bairro continuam válidas
+   ("Bairro não informado" — a checagem é só na criação/edição, G6).
+7. **Remover bairro é migração, não seed.** O seed nunca apaga (`do nothing`).
+   Bairro extinto pela lei nova exige migration `delete`/`update` explícita,
+   com o mesmo registro de fonte.
+8. **Comunicar no PR:** a cidade passa a ter bairro obrigatório — impacto em
+   dados de teste (seed/dev) e no texto de ajuda do formulário.

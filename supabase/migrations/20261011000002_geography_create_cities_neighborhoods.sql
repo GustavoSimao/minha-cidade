@@ -117,6 +117,13 @@ grant select on geography.neighborhoods to anon, authenticated;
 
 revoke all on function geography.slugify(text) from anon, authenticated;
 
+-- service_role: papel de plataforma usado pelos seeds (catálogo IBGE/bairros).
+-- Na nuvem o Supabase já concede estes privilégios; no ambiente local (CLI) o papel
+-- existe sem eles — por isso o grant explícito (idempotente).
+grant usage on schema geography to service_role;
+grant select, insert, update, delete on geography.cities to service_role;
+grant select, insert, update, delete on geography.neighborhoods to service_role;
+
 -- ---------------------------------------------------------------- metadados
 
 insert into shared.app_metadata (key, value)

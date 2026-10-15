@@ -5,7 +5,7 @@ import type {
 } from "@/contexts/geography/application/ports";
 import { IbgeCode } from "@/contexts/geography/domain/city";
 import { Neighborhood } from "@/contexts/geography/domain/neighborhood";
-import { createClient } from "@/shared/infrastructure/supabase";
+import { createClient, table } from "@/shared/infrastructure/supabase";
 
 function toDomain(row: NeighborhoodRow): Neighborhood {
   return Neighborhood.create({
@@ -22,8 +22,7 @@ export class SupabaseNeighborhoodRepository implements NeighborhoodRepository {
   async listByCity(cityId: number): Promise<Neighborhood[]> {
     const supabase = await createClient();
 
-    const { data, error } = await supabase
-      .from("geography.neighborhoods")
+    const { data, error } = await table(supabase, "geography.neighborhoods")
       .select("id, city_id, name, slug, source, source_url")
       .eq("city_id", cityId)
       .order("slug", { ascending: true });
@@ -38,8 +37,7 @@ export class SupabaseNeighborhoodRepository implements NeighborhoodRepository {
   async findById(id: string): Promise<Neighborhood | null> {
     const supabase = await createClient();
 
-    const { data, error } = await supabase
-      .from("geography.neighborhoods")
+    const { data, error } = await table(supabase, "geography.neighborhoods")
       .select("id, city_id, name, slug, source, source_url")
       .eq("id", id)
       .maybeSingle();
