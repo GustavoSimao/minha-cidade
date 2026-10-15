@@ -27,6 +27,7 @@ create index if not exists domain_events_context_name_idx
 
 revoke all on shared.domain_events from anon, authenticated;
 revoke all on sequence shared.domain_events_id_seq from anon, authenticated;
+grant usage on sequence shared.domain_events_id_seq to service_role;
 
 -- ---------------------------------------------------------------- tabelas
 
@@ -116,11 +117,18 @@ alter table publication.publications enable row level security;
 alter table publication.publication_media enable row level security;
 
 -- Leitura pública (projeção anônima é responsabilidade da aplicação — P4).
+-- O autor continua vendo as próprias linhas apagadas (exclusão lógica — P8):
+-- sem `or auth.uid() = author_id`, o soft-delete falharia por RLS (a linha nova
+-- com deleted_at preenchido ficaria invisível e o Postgres acusa violação na
+-- nova linha da policy de SELECT).
 drop policy if exists "publicações são públicas para leitura" on publication.publications;
 create policy "publicações são públicas para leitura"
   on publication.publications for select
   to anon, authenticated
-  using (deleted_at is null and hidden_at is null);
+  using (
+    (deleted_at is null and hidden_at is null)
+    or auth.uid() = author_id
+  );
 
 -- Escrita somente do dono.
 drop policy if exists "usuário insere a própria publicação" on publication.publications;
@@ -220,6 +228,21 @@ grant insert, update, delete on publication.publication_media to authenticated;
 
 revoke all on function publication.anonymize_on_profile_delete() from anon, authenticated;
 revoke all on function publication.enforce_publication_writes() from anon, authenticated;
+
+-- service_role: papel de plataforma usado pelo Route Handler de upload, URLs assinadas
+-- e moderação. Na nuvem o Supabase já concede estes privilégios; no ambiente local (CLI)
+-- o papel existe sem eles — por isso o grant explícito (idempotente).
+grant usage on schema publication to service_role;
+grant select, insert, update, delete on publication.publications to service_role;
+grant select, insert, update, delete on publication.publication_media to service_role;
+grant usage on schema shared to service_role;
+grant select, insert on shared.domain_events to service_role;
+
+-- supabase_auth_admin: o trigger publications_anonymize_on_profile_delete roda quando o
+-- Auth apaga auth.users (encerramento de conta — I8) e precisa anonimizar/remover
+-- publicações. Sem estes grants a exclusão da conta falha.
+grant usage on schema publication to supabase_auth_admin;
+grant update, delete, select on publication.publications to supabase_auth_admin;
 
 -- ---------------------------------------------------------------- metadados
 
