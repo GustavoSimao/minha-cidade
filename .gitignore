@@ -40,3 +40,7 @@ yarn-error.log*
 
 # backups do repo anterior (manter fora do versionamento)
 *.bundle
+
+# estado local do CLI do Supabase
+supabase/.branches/
+supabase/.temp/

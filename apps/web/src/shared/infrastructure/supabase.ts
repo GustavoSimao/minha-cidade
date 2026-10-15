@@ -1,5 +1,31 @@
 import { createServerClient } from "@supabase/ssr";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+
+type AnySupabaseClient = SupabaseClient;
+
+/**
+ * Acesso a tabela de schema não-`public` (D6: um schema por bounded context).
+ *
+ * O PostgREST **não** aceita `.from("publication.publications")` — a relação é
+ * interpretada como nome de tabela no schema `public` e o cache de schema não a
+ * encontra. A forma suportada é `.schema("publication").from("publications")`
+ * (cabeçalho `Accept-Profile`/`Content-Profile`, disponível porque cada schema
+ * criado em migration está listado em `schemas`/`extra_search_path` do
+ * `supabase/config.toml`).
+ *
+ * Uso: `table(supabase, "publication.publications").select("*")`.
+ * Sem ponto, cai no `.from()` comum (ex.: storage em `schema.table` não se aplica).
+ */
+export function table(client: AnySupabaseClient, relation: string) {
+  const dot = relation.indexOf(".");
+
+  if (dot === -1) {
+    return client.from(relation);
+  }
+
+  return client.schema(relation.slice(0, dot)).from(relation.slice(dot + 1));
+}
 
 /**
  * Cliente Supabase para código de servidor (Route Handlers, Server Actions, RSC),
@@ -40,12 +66,13 @@ export async function createClient() {
 /**
  * Cliente com `service_role`: **exclusivo de código de servidor**, usado apenas onde a
  * regra de negócio exige (ex.: seed, admin concede selo, encerramento de conta apaga o
- * usuário do Auth). Nunca expor ao browser.
+ * usuário do Auth, upload/assinatura de mídia de publicação). Nunca expor ao browser —
+ * a chave NÃO tem prefixo NEXT_PUBLIC_ (ver `.env.example`).
  */
 export function createServiceRoleClient() {
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
     {
       cookies: {
         getAll() {

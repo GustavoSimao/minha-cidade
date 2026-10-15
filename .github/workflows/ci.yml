@@ -47,3 +47,36 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
           NEXT_PUBLIC_SITE_URL: http://localhost:3000
+
+  e2e:
+    name: e2e (Playwright, mobile + desktop)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      # Sobe a stack local, aplica migrations + seed e escreve .env.local —
+      # o mesmo script do bootstrap local (idempotente).
+      - name: Ambiente local (stack Supabase + .env.local)
+        run: node scripts/setup-local.mjs
+
+      - name: Instalar navegadores do Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Suite e2e (mobile 375px + desktop 1280px)
+        run: npm run test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-test-results
+          path: apps/web/test-results/
+          retention-days: 7

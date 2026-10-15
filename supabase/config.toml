@@ -26,18 +26,37 @@ project_id = "minha-cidade"
 [api]
 enabled = true
 port = 54321
-schemas = ["public"]
+# Atenção: só liste aqui schemas que já existem — o PostgREST recusa carregar o cache
+# (e a stack não sobe) se um schema não existir. Adicionar o schema na migration da fase
+# que o cria (engagement, social_graph, moderation, notification, analytics).
+# Para adicionar um schema novo: `supabase stop`, somar o schema nas duas listas
+# abaixo e `supabase start && npx supabase db reset` — recriar a stack atualiza o
+# cache do PostgREST com o schema novo.
+# Os repositórios usam `table(supabase, "<schema>.<tabela>")`
+# (shared/infrastructure/supabase.ts), que exige o schema nesta lista.
+schemas = ["public", "shared", "identity", "geography", "publication", "engagement", "social_graph", "moderation", "notification", "analytics"]
 extra_search_path = ["public", "shared", "identity", "geography", "publication", "engagement", "social_graph", "moderation", "notification", "analytics"]
 
 [db]
 port = 54322
 major_version = 17
 
+# Seeds rodam após as migrations no `db reset`, na ordem declarada.
+[db.seed]
+enabled = true
+sql_paths = [
+  "./seed/01-ibge-localidades.sql",
+  "./seed/02-bairros-cariacica.sql",
+  "./seed/03-dev-seed.sql",
+]
+
 [studio]
 enabled = true
 port = 54323
 
-[inbucket]
+# Captura de e-mails locais (confirmação de cadastro, recuperação de senha).
+[local_smtp]
+enabled = true
 port = 54324
 
 [auth]
@@ -51,11 +70,18 @@ enable_signup = true
 enable_signup = true
 enable_confirmations = true
 
+[auth.email.template]
+confirmation = { subject = "Confirme seu e-mail no Minha Cidade", content_path = "./supabase/templates/confirmation.html" }
+
 [auth.external.google]
 enabled = true
 # client_id e secret vêm de variáveis de ambiente (nunca versionar):
 #   SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID
 #   SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET
+# Sem as variáveis definidas, o provedor fica desabilitado na prática (use
+# e-mail/senha localmente). Em produção, o Google é configurado no painel.
+client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
 
 [storage]
 enabled = true
