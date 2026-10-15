@@ -26,6 +26,42 @@ aponte a recomendação. Formato do alerta — texto sóbrio, sem emoji, sem mar
 > Recomendação: <@agente> (<modelo>), ou Tab para trocar de agente, ou /models para trocar o
 > modelo. Continuo assim mesmo?
 
+## Permissões e aprovações
+
+A política vive em `.kilo/kilo.jsonc` (projeto, versionado) e complementa o global
+`~/.config/kilo/kilo.jsonc`. Regra de avaliação: topo para baixo, **a última regra que casa
+vence** — por isso o fallback `"*": "ask"` vem primeiro e os allows depois.
+
+- **Allow automático:** leitura de arquivos; `npm`/`node`/`npx` (lint, typecheck, test, build);
+  `git` somente leitura (status/diff/log/show/branch/ls-files); Supabase **local**
+  (`status`, `start`, `stop`, `db reset`); inspeção de Docker (`ps`, `images`, `compose ps/logs/config/up`);
+  utilitários de leitura do PowerShell.
+- **Sempre pergunta (fallback):** git `commit`/`add`/`push`/`reset`/`clean`; Docker
+  `down`/`stop`/`rm`/`prune`/`exec`; Supabase **remoto** (`db push`, `link`, `secrets`);
+  `Remove-Item`; `curl`; `Invoke-WebRequest`; qualquer comando fora da lista.
+- **Rede:** `webfetch`/`websearch` pedem confirmação — um fetch pode vazar segredo do `.env.local`.
+- **Segredos:** `edit` é negado em `**/.env`, `**/.env.*`, `**/*.pem`, `**/*.key`
+  (a `service_role` key vive em `apps/web/.env.local`).
+- **Desvio consciente da D1** do plano de permissões: `supabase db reset/start/stop` estão em
+  allow porque o ciclo migration → `db reset` → seed é parte da validação de cada fase; o
+  impacto é só no Postgres local. Supabase remoto continua em ask.
+
+## Modo plan (planejamento)
+
+Quando a sessão está no agente **plan**, o trabalho é **só planejamento**: ler, investigar e
+escrever o plano em `.kilo/plans/`. Nesse modo as permissões de escrita e execução ficam
+**bloqueadas** — nenhum `edit` em arquivo do projeto e nenhum comando que altere estado
+(`npm run`, `supabase`, `git commit`, `Remove-Item`, `curl`).
+
+A allowlist de `bash`/`edit` de `.kilo/kilo.jsonc` vale para o agente **code**: no modo plan
+manda a restrição read-only do próprio agente, que é mais restritiva e vem primeiro. Tarefa que
+precise executar algo sai do plano e roda no `@task-executor` ou no agente code.
+
+**Ressalva de sessão:** mudança de arquivo de config **não afeta a sessão corrente** — as
+regras injetadas na sessão continuam valendo até abrir uma sessão nova. Após alterar
+`.kilo/kilo.jsonc`, validar em sessão nova (ver item 1 da validação em
+`.kilo/plans/1791829052316-kilo-permissoes-e-agents.md`).
+
 ## Economia de tokens — invocação condicional
 
 Skills e agentes **só** são carregados quando a tarefa pertence à família descrita na

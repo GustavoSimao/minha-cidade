@@ -12,7 +12,7 @@ fases seguintes.
 
 | Item original | Resolução |
 |---|---|
-| Destino após login/cadastro | **P1** — cadastro mínimo → `/feed`, com convite para escolher bairro e fallback na cidade inteira |
+| Destino após login/cadastro | **P1** — cadastro mínimo → `/` (a home é o feed), com convite para escolher bairro e fallback na cidade inteira |
 | Matriz de permissões | **P2** — leitura pública total; escrita só com conta; moderação por papel |
 | Confirmação de e-mail | **P3** — exigida apenas para escrever; login social do Google isento |
 | Encerrar conta | **P4** — cascata dos dados próprios + anonimização das publicações |

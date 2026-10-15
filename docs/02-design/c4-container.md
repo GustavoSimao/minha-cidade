@@ -14,8 +14,8 @@ em `apps/web/src/contexts/<ctx>` e como schema no Postgres (D6).
 │   src/contexts/…         src/app/ (rotas e páginas)            │
 │   ├─ identity            / /login /cadastro                    │
 │   ├─ geography            /perfil/{username} /perfil/editar   │
-│   ├─ publication          /feed /nova-publicacao /publicacoes/│
-│   ├─ engagement           /feed#comentarios (reação/comentário)│
+│   ├─ publication          / (feed) /publicar /publicacoes/      │
+│   ├─ engagement           /#comentarios (reação/comentário)     │
 │   ├─ social_graph         /amigos /solicitacoes               │
 │   ├─ moderation           /admin/denuncias                    │
 │   ├─ notification         sininho + /notificacoes             │

@@ -25,6 +25,13 @@ e já incorpora as correções de modelagem necessárias.
 > **Corrigido em relação ao sistema anterior:** sem `email` duplicado (a fonte é o Auth),
 > sem contadores como `string` (`events_created`, `supported_causes`, `social_links`),
 > mídia em Storage em vez de múltiplas colunas `image_1..3`.
+>
+> **`identity.badge_requests`** (P13/B2 — migration 20261015000009): solicitações de
+> selo institucional. Colunas: `user_id`, `org_name`, `evidence_url`, `evidence_email`,
+> `message`, `status` (`pending`/`approved`/`rejected`), `decided_by`, `decided_at`,
+> `decision_reason`. Único parcial `(user_id) where status = 'pending'` (uma pendência
+> por usuário) e índice `(status, created_at)` para a fila do admin. Dono lê/cria as
+> próprias; aprovar/rejeitar é service_role pelo `/admin`.
 
 ## geography
 
@@ -83,16 +90,16 @@ as publicações quando a conta é encerrada (I8). FK composta
 
 | Tabela | Coluna | Tipo | Observação |
 |---|---|---|---|
-| `friendships` | `requester_id`/`addressee_id` | uuid | **constraint único lógico** impede duplicata A↔B |
+| `friendships` | `user_low`/`user_high` (sentinela ordenada, `user_low < user_high`), `status`, `requested_by`, `responded_by` | uuid | **unique (user_low, user_high)** impede duplicata A↔B; `requested_by`/`responded_by` registram quem agiu (trigger valida que pertencem ao par e que `responded_by <> requested_by`) |
 | | `status` | enum `pending` \| `accepted` \| `removed` | enviar, cancelar (apaga), aceitar, recusar (apaga), desfazer (removed); lista pública; sem bloqueio |
 
 ## moderation
 
 | Tabela | Coluna | Tipo | Observação |
 |---|---|---|---|
-| `reports` | `reporter_id`, `reportable` (tipo + id), `reason`, `description`, `status` | `reason` enum `spam`/`conteudo_inapropriado`/`informacao_falsa`/`assedio`/`outro`; `status` `pending`/`resolved`/`rejected` | só autenticado com e-mail confirmado; **unique (reporter_id, reportable_type, reportable_id)**; sem auto-denúncia |
-| `moderation_actions` | `actor_id`, `action`, `target_type`, `target_id`, `reason`, `created_at` | `action`: `hide`/`restore`/`remove`/`resolve_report`/`grant_badge`/`promote_moderator` | trilha obrigatória de toda ação (P18); ninguém modera a própria conta |
-| `rate_limits` | `subject_type` (`user`/`ip`), `subject_id`, `action`, `window_start`, `count` | | aplicado na camada de aplicação (P16) |
+| `reports` | `reporter_id`, `reportable` (tipo + id), `reason`, `description`, `status` | `reason` enum `spam`/`discurso_odio`/`informacao_falsa`/`conteudo_ilegal`/`assedio`/`outro` (6 valores — M3); `status` `pending`/`resolved`/`rejected` | só autenticado com e-mail confirmado; **unique (reporter_id, reportable_type, reportable_id)**; sem auto-denúncia |
+| `moderation_actions` | `actor_id`, `action`, `target_type`, `target_id`, `reason`, `created_at` | `action`: `hide`/`restore`/`remove`/`report_resolved`/`grant_badge`/`revoke_badge`/`promote_moderator`/`demote_moderator`; `target_type` inclui `profile` (ações de conta, Fase 8) | trilha obrigatória de toda ação (P18); ninguém modera a própria conta |
+| `rate_limits` | `subject_type` (`user`/`ip`), `subject_id`, `scope`, `window` (`hour`/`day`), `window_start`, `count` | | aplicado na camada de aplicação (P16); **unique (subject_type, subject_id, scope, window, window_start)** — a coluna `window` separa os contadores horário e diário do mesmo escopo, que coincidem no início do dia UTC |
 
 ## notification
 
@@ -104,8 +111,7 @@ as publicações quando a conta é encerrada (I8). FK composta
 
 | Tabela | Coluna | Tipo | Observação |
 |---|---|---|---|
-| `analytics_metrics.daily_metrics` | `day`, `city_id`, `neighborhood_id`, `publications`, `problems`, `ideas`, `supports`, `comments`, `active_users`, `reports` | | materializada por pg_cron; **sem PII** |
-| `analytics.snapshots` | `day`, `dataset`, `payload` | | escrita apenas pelo ETL Python |
+| `analytics.daily_metrics` | `day` (PK), `publications_problem`, `publications_idea`, `publications_anonymous`, `active_authors`, `supports`, `opposes`, `comments`, `reports`, `moderation_hidden`, `moderation_removed`, `new_users`, `refreshed_at` | | snapshot diário materializado pelo job pg_cron (`analytics.refresh_daily_metrics`) e pelo backfill do seed local; **sem PII — só contagens** (T1/T2 do spec) |
 
 ## shared
 

@@ -29,8 +29,8 @@ loja.
 
 **Incluído**
 
-- Cadastro e login com Google ou e-mail/senha (Supabase Auth). Cadastro mínimo leva ao
-  `/feed`; quem ainda não escolheu bairro vê convite para escolher e recebe publicações
+- Cadastro e login com Google ou e-mail/senha (Supabase Auth). Cadastro mínimo leva à
+  home (`/`, que é o feed); quem ainda não escolheu bairro vê convite para escolher e recebe publicações
   recentes da cidade inteira como fallback (P1).
 - Perfil público por `username` com foto, capa, bio, cidade e bairro; contadores de
   amigos, publicações e causas apoiadas; lista de amigos. E-mail, telefone, notificações

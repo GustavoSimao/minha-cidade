@@ -28,6 +28,7 @@ revogação cria ADR de substituição referenciando o anterior.
 | [0019](0019-confirmacao-de-email.md) | Confirmação de e-mail condicional à escrita | P3 |
 | [0020](0020-encerramento-de-conta.md) | Encerramento de conta com anonimização | P4 |
 | [0021](0021-minimo-legal.md) | Termos, privacidade e aceite registrado | P22 |
+| [0022](0022-identidade-visual-praca-municipal.md) | Identidade visual "praça/municipal" (Etapa C do plano de design) | — |
 
 > P1–P22 são as decisões de produto registradas em `docs/plano-reescrita-ddd.md` §2.
 
