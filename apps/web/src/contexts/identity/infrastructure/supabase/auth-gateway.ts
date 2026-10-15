@@ -1,11 +1,19 @@
+import { connection } from "next/server";
+
 import { createBrowserClient } from "@supabase/ssr";
 
 import type { AuthGateway, AuthSession } from "@/contexts/identity/application/ports";
-import { createClient, createServiceRoleClient } from "./server";
+import { createClient, createServiceRoleClient, table } from "./server";
 
 /** Implementação do gateway de autenticação usando Supabase Auth. */
 export class SupabaseAuthGateway implements AuthGateway {
   async currentSession(): Promise<AuthSession | null> {
+    // A validação do token compara a expiração com o relógio: com os Cache
+    // Components ativos, o prerender (inclusive o prefetch parcial do Next)
+    // rejeita ler o relógio no shell estático. `connection()` adia a leitura
+    // para a request — mesmo padrão do `site-header`.
+    await connection();
+
     const supabase = await createClient();
     const {
       data: { user },
@@ -59,8 +67,7 @@ export class SupabaseAuthGateway implements AuthGateway {
     // O trigger `on_auth_user_created` criou o perfil; registramos o aceite dos termos
     // (invariante I6) na própria linha do perfil.
     const service = createServiceRoleClient();
-    await service
-      .from("identity.profiles")
+    await table(service, "identity.profiles")
       .update({ termos_aceitos_em: params.termsAcceptedAt.toISOString() })
       .eq("id", data.user.id);
 
@@ -91,6 +98,24 @@ export class SupabaseAuthGateway implements AuthGateway {
 
     if (error) {
       throw new Error("código de autenticação inválido");
+    }
+  }
+
+  /**
+   * Confirma o e-mail pelo link do e-mail de cadastro (P3).
+   * O template local aponta para `/auth/callback?token_hash=...&type=signup`
+   * (fluxo `verifyOtp`, não o `token` implícito) — assim o clique já deixa o
+   * usuário com sessão aberta.
+   */
+  async verifyEmailToken(tokenHash: string, type: string): Promise<void> {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.verifyOtp({
+      token_hash: tokenHash,
+      type: type as "signup" | "invite" | "magiclink" | "recovery" | "email_change",
+    });
+
+    if (error) {
+      throw new Error("link de confirmação inválido ou expirado");
     }
   }
 

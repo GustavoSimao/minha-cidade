@@ -61,6 +61,8 @@ create table if not exists identity.profiles (
   is_verified       boolean not null default false,
   city_id           bigint,     -- FK para geography.cities criada na Fase 3
   neighborhood_id   uuid,       -- FK para geography.neighborhoods criada na Fase 3
+  show_neighborhood boolean not null default true,  -- I7: exibir o bairro no perfil público
+
   termos_aceitos_em timestamptz,
   created_at        timestamptz not null default now(),
   updated_at        timestamptz not null default now(),
@@ -112,13 +114,19 @@ create trigger profiles_enforce_invariants
 -- ------------------------------------------------- I1/I3: perfil criado pelo Auth
 
 -- I3: username gerado do nome; vazio -> 'usuario-' + 8 aleatórios; colisão -> sufixo.
+-- SECURITY DEFINER: o trigger roda no contexto do Auth (supabase_auth_admin), que não
+-- passa na política RLS de insert em profiles. Como definer do owner (postgres), o
+-- insert do perfil próprio é feito com privilégio de owner — sem abrir a escrita para
+-- os clientes (as policies de insert/update continuam valendo para anon/authenticated).
 create or replace function identity.handle_new_user()
 returns trigger
 language plpgsql
+security definer
+set search_path = ''
 as $$
 declare
   base  text := identity.slugify(coalesce(new.raw_user_meta_data ->> 'name', 'usuario'));
-  uname text := coalesce(nullif(base, ''), 'usuario-' || substr(md5(random()::text), 1, 8));
+  uname text := coalesce(nullif(base, ''), 'usuario-' || substr(pg_catalog.md5(pg_catalog.random()::text), 1, 8));
   n     integer := 1;
 begin
   while exists (select 1 from identity.profiles where username = uname) loop
@@ -127,7 +135,7 @@ begin
   end loop;
 
   insert into identity.profiles (id, username, full_name)
-  values (new.id, uname, coalesce(nullif(trim(new.raw_user_meta_data ->> 'name'), ''), 'Usuário'));
+  values (new.id, uname, coalesce(nullif(pg_catalog.btrim(new.raw_user_meta_data ->> 'name'), ''), 'Usuário'));
 
   return new;
 end;
@@ -178,6 +186,23 @@ revoke all on schema identity from anon, authenticated;
 grant usage on schema identity to anon, authenticated;
 grant select, insert, update, delete on identity.profiles to authenticated;
 grant select on identity.profiles to anon;
+
+-- service_role: papel de plataforma usado por seed, admin e encerramento de conta.
+-- Na nuvem o Supabase já concede estes privilégios; no ambiente local (CLI) o papel
+-- existe sem eles — por isso o grant explícito (idempotente).
+grant usage on schema identity to service_role;
+grant select, insert, update, delete on identity.profiles to service_role;
+
+-- supabase_auth_admin: papel com que o Auth (gotrue) se conecta ao banco para rodar
+-- o trigger on_auth_user_created, que insere em identity.profiles (I1/I3). Sem estes
+-- grants o cadastro falha com 500 ("permission denied for schema identity").
+grant usage on schema identity to supabase_auth_admin;
+grant select, insert, update, delete on identity.profiles to supabase_auth_admin;
+grant usage on schema public to supabase_auth_admin;
+
+-- identity.slugify usa extensions.unaccent (disparado pelo trigger a cada cadastro).
+grant usage on schema extensions to supabase_auth_admin, service_role;
+grant execute on function extensions.unaccent(text) to supabase_auth_admin, service_role;
 
 -- ---------------------------------------------------------------- metadados
 

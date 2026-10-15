@@ -17,7 +17,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   const session = await new SupabaseAuthGateway().currentSession();
   if (session) {
-    redirect("/feed");
+    redirect("/");
   }
 
   return (

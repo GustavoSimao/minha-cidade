@@ -10,7 +10,7 @@ export const instant = false;
 export default async function RegisterPage() {
   const session = await new SupabaseAuthGateway().currentSession();
   if (session) {
-    redirect("/feed");
+    redirect("/");
   }
 
   return (

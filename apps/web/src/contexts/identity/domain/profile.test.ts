@@ -121,6 +121,7 @@ describe("Profile", () => {
       phone: "27999999999",
       avatarPath: null,
       coverPath: null,
+      showNeighborhood: true,
       cityId: 3201309,
       neighborhoodId: null,
     });
@@ -150,6 +151,7 @@ describe("Profile", () => {
       phone: null,
       avatarPath: null,
       coverPath: null,
+      showNeighborhood: true,
       cityId: null,
       neighborhoodId: null,
     });
@@ -176,6 +178,7 @@ describe("Profile", () => {
         phone: null,
         avatarPath: null,
         coverPath: null,
+        showNeighborhood: true,
         cityId: null,
         neighborhoodId: "bairro-inexistente",
       }),
@@ -204,11 +207,120 @@ describe("Profile", () => {
       phone: null,
       avatarPath: null,
       coverPath: null,
+      showNeighborhood: true,
       cityId: null,
       neighborhoodId: null,
     });
 
     expect(profile.cityId).toBeNull();
     expect(profile.neighborhoodId).toBeNull();
+  });
+
+  it("caminho vazio de avatar/capa remove a imagem (T2)", () => {
+    const profile = Profile.rehydrate({
+      id: "77777777-7777-7777-7777-777777777777",
+      username: "ana-souza",
+      fullName: "Ana Souza",
+      bio: null,
+      phone: null,
+      avatarPath: "avatars/ana/foto.webp",
+      coverPath: "covers/ana/capa.webp",
+      role: "user",
+      verifiedOrg: null,
+      cityId: null,
+      neighborhoodId: null,
+      termsAcceptedAt: acceptedAt,
+    });
+
+    profile.updateEditableFields({
+      fullName: "Ana Souza",
+      bio: null,
+      phone: null,
+      avatarPath: "",
+      coverPath: "   ",
+      showNeighborhood: true,
+      cityId: null,
+      neighborhoodId: null,
+    });
+
+    expect(profile.avatarPath).toBeNull();
+    expect(profile.coverPath).toBeNull();
+  });
+
+  it("perfil novo nasce mostrando o bairro (default)", () => {
+    const profile = Profile.create({
+      id: new ProfileId("88888888-8888-8888-8888-888888888888"),
+      name: "Fabio Neres",
+      termsAcceptedAt: acceptedAt,
+    });
+
+    expect(profile.showNeighborhood).toBe(true);
+  });
+
+  it("projeção pública omite o bairro quando o dono desliga a exibição (I7)", () => {
+    const profile = Profile.rehydrate({
+      id: "99999999-9999-9999-9999-999999999999",
+      username: "graca-lima",
+      fullName: "Graça Lima",
+      bio: null,
+      phone: null,
+      avatarPath: null,
+      coverPath: null,
+      role: "user",
+      verifiedOrg: null,
+      cityId: 3201309,
+      neighborhoodId: "bairro-1",
+      showNeighborhood: false,
+      termsAcceptedAt: acceptedAt,
+    });
+
+    profile.updateEditableFields({
+      fullName: "Graça Lima",
+      bio: null,
+      phone: null,
+      avatarPath: null,
+      coverPath: null,
+      showNeighborhood: false,
+      cityId: 3201309,
+      neighborhoodId: "bairro-1",
+    });
+
+    const publicView = profile.toPublicView(new Date("2026-02-01T00:00:00.000Z"));
+
+    // A cidade continua visível; só o bairro é omitido.
+    expect(publicView.cityId).toBe(3201309);
+    expect(publicView.neighborhoodId).toBeNull();
+  });
+
+  it("liga de volta a exibição do bairro", () => {
+    const profile = Profile.rehydrate({
+      id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      username: "heitor-batista",
+      fullName: "Heitor Batista",
+      bio: null,
+      phone: null,
+      avatarPath: null,
+      coverPath: null,
+      role: "user",
+      verifiedOrg: null,
+      cityId: 3201309,
+      neighborhoodId: "bairro-1",
+      showNeighborhood: false,
+      termsAcceptedAt: acceptedAt,
+    });
+
+    profile.updateEditableFields({
+      fullName: "Heitor Batista",
+      bio: null,
+      phone: null,
+      avatarPath: null,
+      coverPath: null,
+      showNeighborhood: true,
+      cityId: 3201309,
+      neighborhoodId: "bairro-1",
+    });
+
+    expect(profile.showNeighborhood).toBe(true);
+    expect(profile.toPublicView(acceptedAt).neighborhoodId).toBe("bairro-1");
   });
 });

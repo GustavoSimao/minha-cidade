@@ -8,8 +8,13 @@ import {
 } from "@/contexts/geography/application/use-cases";
 import { SupabaseCityRepository } from "@/contexts/geography/infrastructure/supabase/city-repository";
 import { SupabaseNeighborhoodRepository } from "@/contexts/geography/infrastructure/supabase/neighborhood-repository";
-import { CloseMyAccount, UpdateMyProfile } from "@/contexts/identity/application/use-cases";
+import {
+  CloseMyAccount,
+  RequestBadge,
+  UpdateMyProfile,
+} from "@/contexts/identity/application/use-cases";
 import { SupabaseAuthGateway } from "@/contexts/identity/infrastructure/supabase/auth-gateway";
+import { SupabaseBadgeRequestRepository } from "@/contexts/identity/infrastructure/supabase/badge-request-repository";
 import { SupabaseProfileRepository } from "@/contexts/identity/infrastructure/supabase/profile-repository";
 
 export interface AuthFormState {
@@ -17,7 +22,7 @@ export interface AuthFormState {
   message?: string;
 }
 
-const NEXT_FALLBACK = "/feed";
+const NEXT_FALLBACK = "/";
 
 function first(formData: FormData, key: string): string {
   const value = formData.get(key);
@@ -141,6 +146,11 @@ export async function updateProfileAction(
     fullName: first(formData, "fullName"),
     bio: first(formData, "bio") || null,
     phone: first(formData, "phone") || null,
+    // Campo vazio = remover a imagem; ausente = manter a atual.
+    // O checkbox é sempre renderizado: ausência = desmarcado (`false`).
+    avatarPath: formData.has("avatarPath") ? first(formData, "avatarPath") : undefined,
+    coverPath: formData.has("coverPath") ? first(formData, "coverPath") : undefined,
+    showNeighborhood: check(formData, "showNeighborhood"),
     cityId,
     neighborhoodId,
   });
@@ -175,4 +185,31 @@ export async function closeAccountAction(
   }
 
   redirect("/");
+}
+
+/** Solicita o selo institucional (P13/B2 — jornada 6 do PRD). */
+export async function requestBadgeAction(
+  _prev: AuthFormState,
+  formData: FormData,
+): Promise<AuthFormState> {
+  const useCase = new RequestBadge(
+    new SupabaseAuthGateway(),
+    new SupabaseProfileRepository(),
+    new SupabaseBadgeRequestRepository(),
+  );
+
+  const result = await useCase.execute({
+    orgName: first(formData, "orgName"),
+    evidenceUrl: first(formData, "evidenceUrl"),
+    evidenceEmail: first(formData, "evidenceEmail") || null,
+    message: first(formData, "message") || null,
+  });
+
+  if (!result.ok) {
+    return { error: result.error };
+  }
+
+  revalidatePath("/solicitar-selo");
+
+  return { message: "Solicitação enviada. A análise é manual e o status aparece aqui." };
 }

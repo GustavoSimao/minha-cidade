@@ -71,6 +71,8 @@ minúsculas → remove tudo que não é `[a-z0-9-]` → se vazio, fallback → s
 | `ChooseNeighborhood` | cityId, neighborhoodId | define localização do perfil (feed passa a segmentar por bairro — P1) | `ProfileUpdated` |
 | `GrantVerifiedOrg` *(admin)* | profileId, nome do órgão | define `verified_org`/`is_verified`; registra ação de moderação | `VerifiedOrgGranted` |
 | `RevokeVerifiedOrg` *(admin)* | profileId | limpa selo; registra ação | `VerifiedOrgRevoked` |
+| `RequestBadge` | órgão, URL da evidência, e-mail/mensagem opcionais | cria `badge_requests` pending (I9; uma pendência por usuário) | `BadgeRequested` |
+| `ListMyBadgeRequest` | sessão | estado do próprio pedido (pending/approved/rejected + motivo) | — |
 | `PromoteModerator` / `DemoteModerator` *(admin)* | profileId | altera `role`; registra ação | `RoleChanged` |
 | `CloseMyAccount` | senha | anonimiza publicações → apaga perfil/dados próprios → apaga usuário do Auth (I8) | `AccountClosed` |
 
@@ -172,15 +174,21 @@ neighborhood_id);` (usado pelo feed).
 | Método | Rota | Entrada | Saída | Erros |
 |---|---|---|---|---|
 | GET | `/login` | — | página de entrar | — |
-| POST | `/auth/login` *(server action)* | e-mail, senha | sessão + redirect `/feed` | credencial inválida |
+| POST | `/auth/login` *(server action)* | e-mail, senha | sessão + redirect `/` | credencial inválida |
 | GET | `/cadastro` | — | página de cadastro | — |
-| POST | `/auth/register` *(server action)* | nome, e-mail, senha, aceite | sessão + redirect `/feed` (P1) | e-mail em uso, senha fraca |
-| GET | `/auth/callback` | `code` (OAuth) | sessão + redirect `/feed` | código inválido |
+| POST | `/auth/register` *(server action)* | nome, e-mail, senha, aceite | sessão + redirect `/` (P1) | e-mail em uso, senha fraca |
+| GET | `/auth/callback` | `code` (OAuth) | sessão + redirect `/` | código inválido |
 | POST | `/auth/logout` *(server action)* | — | sessão encerrada + redirect `/` | — |
 | GET | `/perfil/{username}` | username | perfil público (I7) | 404 |
 | GET | `/perfil/editar` | sessão | formulário do próprio perfil | 401 |
 | POST | `/perfil/editar` *(server action)* | campos do perfil | perfil atualizado | validação |
 | POST | `/perfil/encerrar` *(server action)* | senha | conta encerrada + redirect `/` | senha incorreta |
+| GET | `/solicitar-selo` | sessão | formulário/estado do pedido de selo (P13/B2) | 401 |
+| POST | `/solicitar-selo` *(server action)* | órgão, evidência, e-mail/mensagem | pedido criado (pending) | já verificado, já pendente, dados inválidos |
+
+> As ações de staff sobre a fila de pedidos (`ListBadgeRequests`,
+> `ApproveBadgeRequest`, `RejectBadgeRequest`) ficam no contexto **Moderation** e
+> aparecem no `/admin` — aprovar concede o selo pelo mesmo `GrantBadge`.
 
 ## 9. Testes derivados
 
@@ -198,7 +206,7 @@ neighborhood_id);` (usado pelo feed).
 - trigger cria perfil com username único ao inserir em `auth.users`.
 - dois nomes iguais geram usernames distintos (`ana`, `ana-1`).
 
-**E2E (Fase 9, Playwright):** cadastro com e-mail → `/feed`; login Google; editar perfil;
+**E2E (Fase 9, Playwright):** cadastro com e-mail → `/` (o feed é a home); login Google; editar perfil;
 ver perfil público por URL; encerrar conta.
 
 ## 10. Dependências e o que fica para outras fases
