@@ -60,6 +60,9 @@ export interface PublicAuthor {
   username: string;
   fullName: string;
   avatarPath: string | null;
+  /** Selo institucional (P13) — some do feed e da página da publicação. */
+  isVerified: boolean;
+  verifiedOrg: string | null;
 }
 
 /** Porta de leitura pública de autores (Identity), em lote. */
@@ -104,6 +107,15 @@ export interface PublicationRepository {
 
   /** Leitura pública paginada (P8/P9): só não apagadas e não ocultas. */
   listPublicFeed(query: FeedQuery): Promise<{ rows: PublicationRow[]; nextCursor: string | null }>;
+
+  /** Publicações públicas de um autor (perfil), mais recentes primeiro. */
+  listPublicByAuthor(
+    authorId: string,
+    options?: { limit?: number },
+  ): Promise<{ rows: PublicationRow[] }>;
+
+  /** Contagem pública de publicações do autor (contador do perfil — P6). */
+  countPublicByAuthor(authorId: string): Promise<number>;
 
   /** Atualiza título/corpo/mídia e marca `edited_at` (P7). */
   updateEditableFields(

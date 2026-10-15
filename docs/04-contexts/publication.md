@@ -69,6 +69,8 @@ schemas: a composição de nomes é feita na aplicação.
 | `DeleteMyPublication` | id | só o autor; exclusão lógica (P8) | `PublicationDeleted` |
 | `GetPublication` | id | leitura pública (projeção anônima — P4) ou `NotFound` (P9) | — |
 | `ListFeed` | cityId?, neighborhoodId?, type?, cursor, limite | pública, paginada, recente primeiro, sem ranking (P8) | — |
+| `ListAuthorPublications` | authorId, limite | pública, mais recentes primeiro; usada no perfil | — |
+| `CountAuthorPublications` | authorId | contagem pública (contador do perfil) | — |
 
 `CreatePublication` exige sessão com e-mail confirmado (P3) — a verificação é feita na
 camada de aplicação via porta de sessão, antes de qualquer escrita.
@@ -125,7 +127,7 @@ consultando `geography.neighborhoods`.
 
 | Ação | Quem |
 |---|---|
-| `select` em `publications` | `anon` e `authenticated` — **projeção pública** (sem `author_id` quando anônima — P4; a projeção é responsabilidade da aplicação) |
+| `select` em `publications` | `anon` e `authenticated` — **projeção pública** (sem `author_id` quando anônima — P4; a projeção é responsabilidade da aplicação). Exceção validada no stack local: `or auth.uid() = author_id` — sem ela o **soft-delete falha por RLS**, porque a linha nova com `deleted_at` preenchido ficaria invisível para o próprio autor; o autor segue vendo as próprias publicações apagadas (a aplicação trata apagada como 404) |
 | `insert` | `authenticated` com `auth.uid() = author_id` |
 | `update` | `authenticated` com `auth.uid() = author_id` e `deleted_at is null` (P7/P8) |
 | `delete` | **nenhum** via API — exclusão é lógica (`deleted_at`), feita por `update` (P8) |
@@ -139,7 +141,7 @@ escrita apenas pelo Route Handler autenticado (P5).
 
 | Método | Rota | Entrada | Saída | Erros |
 |---|---|---|---|---|
-| GET | `/feed` | `?cidade=&bairro=&tipo=&cursor=` | lista paginada (projeção pública) | — |
+| GET | `/` | `?cidade=&bairro=&tipo=&cursor=` | lista paginada (projeção pública); `/feed?…` redireciona para cá preservando os filtros; `bairro` sem `cidade` canonicaliza para a cidade dona do bairro | — |
 | GET | `/publicacao/{id}` | id | publicação pública | 404 (P9) |
 | GET | `/publicar` | sessão | formulário | 401 sem sessão |
 | POST | `/publicar` *(server action)* | tipo, título, corpo, anônimo, cidade, bairro, paths de mídia | cria + redirect para a publicação | validação P1–P6 |

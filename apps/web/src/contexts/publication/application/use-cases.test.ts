@@ -49,6 +49,15 @@ function fakeRepo(overrides: Partial<PublicationRepository> = {}): PublicationRe
     async listPublicFeed() {
       return { rows: [ROW], nextCursor: null };
     },
+
+    async listPublicByAuthor(authorId) {
+      return { rows: ROW.author_id === authorId ? [ROW] : [] };
+    },
+
+    async countPublicByAuthor(authorId) {
+      return ROW.author_id === authorId ? 1 : 0;
+    },
+
     async updateEditableFields() {},
     async replaceMedia() {},
     async softDelete() {},

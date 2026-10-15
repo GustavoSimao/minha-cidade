@@ -15,7 +15,13 @@ export class SupabaseAuthorDirectory implements AuthorDirectory {
     return new Map(
       views.map((view) => [
         view.id,
-        { username: view.username, fullName: view.fullName, avatarPath: view.avatarPath },
+        {
+          username: view.username,
+          fullName: view.fullName,
+          avatarPath: view.avatarPath,
+          isVerified: view.isVerified,
+          verifiedOrg: view.verifiedOrg,
+        },
       ]),
     );
   }

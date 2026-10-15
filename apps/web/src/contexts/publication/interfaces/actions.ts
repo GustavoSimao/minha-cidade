@@ -12,6 +12,12 @@ import {
 import { SupabasePublicationRepository } from "@/contexts/publication/infrastructure/supabase/publication-repository";
 import { GeographyLocationValidator } from "@/contexts/publication/infrastructure/supabase/location-validator";
 import { SupabaseAuthGateway } from "@/contexts/identity/infrastructure/supabase/auth-gateway";
+import { EnforceRateLimit } from "@/contexts/moderation/application/use-cases";
+import {
+  SupabaseModerationRepository,
+  currentClientIp,
+  currentModerationSession,
+} from "@/contexts/moderation/infrastructure/supabase/moderation-repository";
 import { first } from "@/shared/form";
 
 export interface PublicationFormState {
@@ -41,11 +47,24 @@ function mediaPaths(formData: FormData): PublicationMedia[] {
     );
 }
 
-/** Cria publicação (invariantes P1–P6). */
+/** Cria publicação (invariantes P1–P6; limite P16/M9 — 5/hora e 20/dia). */
 export async function createPublicationAction(
   _prev: PublicationFormState,
   formData: FormData,
 ): Promise<PublicationFormState> {
+  // M9/P16: limites de publicação (5/hora e 20/dia por usuário; 30/hora por IP
+  // quando atrás de proxy confiável — B4/ADR-0017).
+  const limits = new SupabaseModerationRepository();
+  const withinLimit = await new EnforceRateLimit(
+    currentModerationSession,
+    limits,
+    currentClientIp,
+  ).execute("publication");
+
+  if (!withinLimit.ok) {
+    return { error: withinLimit.error };
+  }
+
   const useCase = new CreatePublication(
     () => new SupabaseAuthGateway().currentSession(),
     new GeographyLocationValidator(),
@@ -66,7 +85,7 @@ export async function createPublicationAction(
     return { error: result.error };
   }
 
-  revalidatePath("/feed");
+  revalidatePath("/");
   redirect(`/publicacao/${result.value.id}`);
 }
 
@@ -91,7 +110,7 @@ export async function updatePublicationAction(
     return { error: result.error };
   }
 
-  revalidatePath("/feed");
+  revalidatePath("/");
   revalidatePath(`/publicacao/${first(formData, "publicationId")}`);
 
   return { message: "Publicação atualizada." };
@@ -113,6 +132,6 @@ export async function deletePublicationAction(
     return { error: result.error };
   }
 
-  revalidatePath("/feed");
-  redirect("/feed");
+  revalidatePath("/");
+  redirect("/");
 }

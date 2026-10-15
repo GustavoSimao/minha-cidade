@@ -1,11 +1,12 @@
-import { createClient } from "@/shared/infrastructure/supabase";
+import { createServiceRoleClient } from "@/shared/infrastructure/supabase";
 
 /**
  * URL temporária de leitura de mídia de publicação (bucket privado — spec §7).
- * Gerada no servidor; validade de 1 hora.
+ * Gerada no servidor com service_role (o bucket privado não tem política de leitura
+ * pública; a URL vale por 1 hora e é embutida na página renderizada).
  */
 export async function signedMediaUrl(path: string): Promise<string | null> {
-  const supabase = await createClient();
+  const supabase = createServiceRoleClient();
 
   const { data, error } = await supabase.storage
     .from("publication-media")
