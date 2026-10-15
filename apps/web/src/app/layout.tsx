@@ -1,16 +1,29 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 
 import { SiteHeaderSlot } from "@/shared/ui/site-header-slot";
+import { RegisterServiceWorker } from "@/shared/ui/pwa/register-sw";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
     default: "Minha Cidade",
-    template: "%s · Minha Cidade",
+    template: "%s | Minha Cidade",
   },
   description:
     "Publique problemas e ideias do seu bairro, apoie as causas dos vizinhos e acompanhe o que a comunidade está discutindo.",
+  // Ícones e manifest vêm das convenções de arquivo (`app/icon.png`, `app/apple-icon.png`,
+  // `app/manifest.ts`).
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Minha Cidade",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#1e5b45",
+  colorScheme: "light",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -18,12 +31,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="pt-BR" className="h-full antialiased">
       <body className="flex min-h-full flex-col bg-surface text-text-body">
         <SiteHeaderSlot />
-        <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:px-6">
+        <RegisterServiceWorker />
+        <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 pb-24 sm:px-6 sm:pb-6">
           {children}
         </main>
         <footer className="border-t border-border-subtle py-6 text-center text-xs text-text-muted">
           <div className="mx-auto flex max-w-5xl flex-col gap-2 px-4 sm:flex-row sm:items-center sm:justify-between">
-            <p>Minha Cidade · participação cidadã por bairro</p>
+            <p>Minha Cidade — participação cidadã por bairro</p>
             <nav className="flex justify-center gap-4">
               <Link className="hover:text-text-body" href="/termos">
                 Termos de uso

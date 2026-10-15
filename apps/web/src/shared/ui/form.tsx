@@ -1,14 +1,21 @@
-import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from "react";
+"use client";
+
+import {
+  useId,
+  type ButtonHTMLAttributes,
+  type InputHTMLAttributes,
+  type ReactNode,
+} from "react";
 
 import { cn } from "./cn";
 
 type ButtonVariant = "primary" | "secondary" | "danger";
 
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
-  primary: "bg-brand-600 text-white hover:bg-brand-700 shadow-sm",
+      primary: "bg-brand-600 text-white hover:bg-brand-700 shadow-stamp",
   secondary:
     "border border-border-subtle bg-surface-raised text-text-body hover:bg-surface",
-  danger: "bg-danger text-white hover:bg-red-700",
+  danger: "bg-danger text-white hover:bg-danger-hover",
 };
 
 /** Botão com alvo de toque mínimo de 44px (design system). */
@@ -40,7 +47,11 @@ export function TextField({
   label: string;
   error?: string;
 }) {
-  const fieldId = id ?? props.name ?? label;
+  // `useId` (não `name`): dois formulários na mesma página com campos de mesmo
+  // `name` gerariam ids HTML duplicados e os labels apontariam para o input
+  // errado (bug real na fila de solicitações do /admin).
+  const autoId = useId();
+  const fieldId = id ?? autoId;
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -76,7 +87,8 @@ export function CheckboxField({
   id,
   ...props
 }: InputHTMLAttributes<HTMLInputElement> & { label: ReactNode }) {
-  const fieldId = id ?? props.name ?? "checkbox";
+  const autoId = useId();
+  const fieldId = id ?? autoId;
 
   return (
     <div className="flex items-start gap-2.5">
@@ -125,7 +137,7 @@ export function Card({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-card border border-border-subtle bg-surface-raised p-5 shadow-sm sm:p-6">
+    <section className="rounded-card border border-border-subtle bg-surface-raised p-5 shadow-stamp sm:p-6">
       {title ? (
         <h1 className="text-xl font-bold text-text-strong">{title}</h1>
       ) : null}

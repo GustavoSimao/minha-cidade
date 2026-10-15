@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import { cn } from "./cn";
 
 /** Iniciais do nome, usadas como fallback do avatar (design system). */
@@ -25,8 +27,7 @@ export function Avatar({
 }) {
   if (imageUrl) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element -- URL do Supabase Storage; otimização virá com next/image na Fase 4
-      <img
+      <Image
         alt={`Foto de ${name}`}
         className={cn("rounded-full object-cover", className)}
         height={size}

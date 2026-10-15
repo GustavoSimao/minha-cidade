@@ -1,25 +1,46 @@
 @import "tailwindcss";
 
-/* Tokens do design system — docs/02-design/design-system.md */
+/* Tokens do design system — docs/02-design/design-system.md (ADR-0022).
+
+   Identidade "praça/municipal": concreto frio, papel branco, tinta escura e um
+   único acento verde-garrafa (a cor de sinalização de praça e área ambiental).
+   Deliberadamente fora do cluster creme/terracota — o detector do repo
+   (avoid-ai-design) marca esse par como " Claude look". Contraste AA verificado
+   par a par na revisão do ADR. */
 @theme {
-  --color-brand-50: #eef2ff;
-  --color-brand-100: #e0e7ff;
-  --color-brand-600: #2563eb;
-  --color-brand-700: #1d4ed8;
+  /* acento único — verde garrafa */
+  --color-brand-50: #eaf3ee;
+  --color-brand-100: #d3e6dc;
+  --color-brand-600: #1e5b45;
+  --color-brand-700: #174835;
 
-  --color-surface: #f8fafc;
+  /* superfícies — concreto frio e papel */
+  --color-surface: #ececea;
   --color-surface-raised: #ffffff;
-  --color-border-subtle: #e2e8f0;
+  --color-border-subtle: #d8d9d6;
 
-  --color-text-strong: #0f172a;
-  --color-text-body: #334155;
-  --color-text-muted: #64748b;
+  /* tinta */
+  --color-text-strong: #1c1917;
+  --color-text-body: #44403c;
+  --color-text-muted: #6a6357;
 
-  --color-success: #16a34a;
-  --color-danger: #dc2626;
-  --color-warning: #d97706;
+  /* status */
+  --color-success: #4d7c0f;
+  --color-success-bg: #f1f7e4;
+  --color-danger: #b3261e;
+  --color-danger-bg: #fdecea;
+  --color-danger-border: #f3d6d2;
+  --color-danger-hover: #8c1d18;
+  --color-warning: #8a5a00;
+  --color-warning-bg: #fbf3e2;
+  --color-warning-border: #eedfc0;
 
-  --radius-card: 12px;
+  /* forma — mais reta, de sinalização pública */
+  --radius-card: 8px;
+  --shadow-stamp: 2px 2px 0 rgb(28 25 23 / 0.08);
+
+  /* tipografia — display serifada do sistema para títulos */
+  --font-display: ui-serif, Georgia, "Times New Roman", serif;
 }
 
 :root {
@@ -31,6 +52,14 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Títulos com a tipografia de display (placar/gazeta municipal). */
+@layer base {
+  h1,
+  h2 {
+    font-family: var(--font-display);
+  }
 }
 
 /* Foco visível em todos os controles (acessibilidade) */

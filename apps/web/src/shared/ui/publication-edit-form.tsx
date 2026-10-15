@@ -1,13 +1,15 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 import {
   deletePublicationAction,
   updatePublicationAction,
   type PublicationFormState,
 } from "@/contexts/publication/interfaces/actions";
-import { Alert, Button, Card } from "@/shared/ui/form";
+import { Alert, Button, Card, TextField } from "@/shared/ui/form";
+import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
+import { Textarea } from "@/shared/ui/text-area";
 
 export interface PublicationEditFormProps {
   publication: {
@@ -33,32 +35,22 @@ export function PublicationEditForm({
         <input name="publicationId" type="hidden" value={publication.id} />
         <input name="mediaPaths" type="hidden" value={publication.mediaPaths.join("\n")} />
 
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-text-strong" htmlFor="edit-title">
-            Título
-          </label>
-          <input
-            className="min-h-11 w-full rounded-lg border border-border-subtle bg-surface-raised px-3 py-2 text-base text-text-strong"
-            defaultValue={publication.title}
-            id="edit-title"
-            maxLength={120}
-            name="title"
-          />
-        </div>
+        <TextField
+          defaultValue={publication.title}
+          id="edit-title"
+          label="Título"
+          maxLength={120}
+          name="title"
+        />
 
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-text-strong" htmlFor="edit-content">
-            Texto
-          </label>
-          <textarea
-            className="min-h-32 w-full rounded-lg border border-border-subtle bg-surface-raised px-3 py-2 text-base text-text-strong"
-            defaultValue={publication.content}
-            id="edit-content"
-            maxLength={5000}
-            name="content"
-            rows={6}
-          />
-        </div>
+        <Textarea
+          defaultValue={publication.content}
+          id="edit-content"
+          label="Texto"
+          maxLength={5000}
+          name="content"
+          rows={6}
+        />
 
         {publication.mediaPaths.length > 0 ? (
           <p className="text-sm text-text-muted">
@@ -90,18 +82,31 @@ export function DeletePublicationButton({ publicationId }: { publicationId: stri
     deletePublicationAction,
     {},
   );
+  const [confirming, setConfirming] = useState(false);
 
   return (
-    <form action={formAction}>
-      <input name="publicationId" type="hidden" value={publicationId} />
+    <div className="flex flex-col gap-2">
+      <Button onClick={() => setConfirming(true)} type="button" variant="danger">
+        Apagar publicação
+      </Button>
+
+      <ConfirmDialog
+        action={formAction}
+        confirmLabel="Apagar publicação"
+        description="A publicação sai do feed e só a moderação pode restaurá-la. Não é possível desfazer por conta própria."
+        onClose={() => setConfirming(false)}
+        open={confirming}
+        pending={pending}
+        title="Apagar esta publicação?"
+      >
+        <input name="publicationId" type="hidden" value={publicationId} />
+      </ConfirmDialog>
+
       {state.error ? (
-        <p className="mb-2 text-sm text-danger" role="alert">
+        <p className="text-sm text-danger" role="alert">
           {state.error}
         </p>
       ) : null}
-      <Button disabled={pending} type="submit" variant="danger">
-        {pending ? "Apagando…" : "Apagar publicação"}
-      </Button>
-    </form>
+    </div>
   );
 }

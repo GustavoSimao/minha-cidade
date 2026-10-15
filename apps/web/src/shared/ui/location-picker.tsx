@@ -3,6 +3,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 
 import type { CityOption, NeighborhoodOption } from "@/contexts/geography/application/ports";
+import { Select } from "@/shared/ui/select";
 
 export interface LocationPickerProps {
   /** Cidade atualmente selecionada no perfil (pode ser null). */
@@ -207,9 +208,9 @@ useEffect(() => {
     );
   } else {
     neighborhoodArea = (
-      <select
-        className="min-h-11 w-full rounded-lg border border-border-subtle bg-surface-raised px-3 py-2 text-base text-text-strong"
+      <Select
         id={`${fieldId}-neighborhood`}
+        label="Bairro"
         onChange={(event) => setNeighborhoodId(event.target.value || null)}
         value={neighborhoodId ?? ""}
       >
@@ -219,7 +220,7 @@ useEffect(() => {
             {neighborhood.name}
           </option>
         ))}
-      </select>
+      </Select>
     );
   }
 
@@ -287,15 +288,7 @@ useEffect(() => {
         )}
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <label
-          className="text-sm font-medium text-text-strong"
-          htmlFor={`${fieldId}-neighborhood`}
-        >
-          Bairro
-        </label>
-        {neighborhoodArea}
-      </div>
+      <div className="flex flex-col gap-1.5">{neighborhoodArea}</div>
     </div>
   );
 }

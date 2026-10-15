@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { ResolveLocationSelection } from "@/contexts/geography/application/use-cases";
@@ -51,8 +52,12 @@ export default async function EditProfilePage() {
   const formData: OwnProfileFormData = {
     username: profile.username.value,
     fullName: profile.fullName.value,
-    bio: profile.toPublicView(new Date()).bio,
+    // Getter do domínio — sem projetar (e sem ler o relógio no render).
+    bio: profile.bio,
     phone: profile.phone,
+    avatarPath: profile.avatarPath,
+    coverPath: profile.coverPath,
+    showNeighborhood: profile.showNeighborhood,
     cityId: profile.cityId,
     cityName: location.ok ? location.value.cityName : null,
     cityUf: location.ok ? location.value.cityUf : null,
@@ -83,6 +88,16 @@ export default async function EditProfilePage() {
       {profile.isVerified && profile.verifiedOrg ? (
         <p className="text-sm text-text-muted">
           Selo institucional ativo: <BadgePill tone="institutional">{profile.verifiedOrg.name}</BadgePill>
+        </p>
+      ) : null}
+
+      {!profile.isVerified && session.emailConfirmed ? (
+        <p className="text-sm text-text-muted">
+          Representa um órgão público?{" "}
+          <Link className="text-brand-600 hover:underline" href="/solicitar-selo">
+            Solicitar selo institucional
+          </Link>{" "}
+          com o link oficial como evidência.
         </p>
       ) : null}
 

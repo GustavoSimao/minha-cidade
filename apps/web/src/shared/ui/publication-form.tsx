@@ -10,47 +10,27 @@ import {
 } from "@/contexts/publication/interfaces/actions";
 import { Alert, Button, Card, TextField } from "@/shared/ui/form";
 import { LocationPicker } from "@/shared/ui/location-picker";
+import { Textarea } from "@/shared/ui/text-area";
+import { resizeToWebp, uploadImage } from "@/shared/ui/upload-image";
 
-/** Limite de imagens por publicação (P5). */
+/** Limite de imagens por publicação (P15). */
 const MAX_IMAGES = 3;
-
-/** Dimensão máxima do maior lado após redimensionamento (P5). */
-const MAX_SIDE = 1600;
 
 export interface PublicationFormProps {
   launchCity: { id: number; name: string; uf: string; slug: string } | null;
 }
 
-/** Redimensiona a imagem no cliente para WebP ≤ 1600px (P15). */
-async function resizeToWebp(file: File): Promise<File> {
-  const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, MAX_SIDE / Math.max(bitmap.width, bitmap.height));
-  const width = Math.max(1, Math.round(bitmap.width * scale));
-  const height = Math.max(1, Math.round(bitmap.height * scale));
-
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-
-  const context = canvas.getContext("2d");
-  if (context === null) {
-    return file;
-  }
-
-  context.drawImage(bitmap, 0, 0, width, height);
-
-  const blob = await new Promise<Blob | null>((resolve) =>
-    canvas.toBlob((result) => resolve(result), "image/webp", 0.85),
-  );
-
-  if (blob === null) {
-    return file;
-  }
-
-  return new File([blob], file.name.replace(/\.[^.]+$/, ".webp"), { type: "image/webp" });
+/** Imagem em envio: preview local + progresso + caminho no Storage ao concluir. */
+interface UploadItem {
+  key: string;
+  name: string;
+  previewUrl: string;
+  progress: number;
+  path: string | null;
+  error: string | null;
 }
 
-/** Formulário de publicação (problema/ideia), com upload de até 3 imagens (P5). */
+/** Formulário de publicação (problema/ideia), com upload de até 3 imagens (P15). */
 export function PublicationForm({ launchCity }: PublicationFormProps) {
   const [state, formAction, pending] = useActionState<PublicationFormState, FormData>(
     createPublicationAction,
@@ -60,48 +40,69 @@ export function PublicationForm({ launchCity }: PublicationFormProps) {
   const fieldId = useId();
   const [type, setType] = useState<"problem" | "idea">("problem");
   const [isAnonymous, setIsAnonymous] = useState(false);
-  const [mediaPaths, setMediaPaths] = useState<string[]>([]);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [uploads, setUploads] = useState<UploadItem[]>([]);
   const fileInput = useRef<HTMLInputElement>(null);
+
+  const mediaPaths = uploads
+    .map((item) => item.path)
+    .filter((path): path is string => path !== null);
+  const uploading = uploads.some((item) => item.path === null && item.error === null);
+
+  function removeUpload(key: string) {
+    setUploads((current) => {
+      const target = current.find((item) => item.key === key);
+      if (target) {
+        URL.revokeObjectURL(target.previewUrl);
+      }
+      return current.filter((item) => item.key !== key);
+    });
+  }
 
   async function onFilesSelected(files: FileList | null) {
     if (!files || files.length === 0) {
       return;
     }
 
-    setUploadError(null);
-    setUploading(true);
+    const slots = MAX_IMAGES - uploads.length;
 
-    const added: string[] = [];
+    for (const file of Array.from(files).slice(0, Math.max(0, slots))) {
+      const key = `${file.name}-${file.size}-${Math.random().toString(36).slice(2, 8)}`;
+      const previewUrl = URL.createObjectURL(file);
 
-    try {
-      for (const file of Array.from(files).slice(0, MAX_IMAGES - mediaPaths.length)) {
+      setUploads((current) => [
+        ...current,
+        { key, name: file.name, previewUrl, progress: 0, path: null, error: null },
+      ]);
+
+      try {
         const resized = await resizeToWebp(file);
+        const path = await uploadImage(resized, "/api/publications/media", (ratio) => {
+          setUploads((current) =>
+            current.map((item) =>
+              item.key === key ? { ...item, progress: Math.round(ratio * 100) } : item,
+            ),
+          );
+        });
 
-        const body = new FormData();
-        body.set("file", resized);
-
-        const response = await fetch("/api/publications/media", { method: "POST", body });
-        const data: { path?: string; error?: string } = await response.json();
-
-        if (!response.ok || !data.path) {
-          setUploadError(data.error ?? "falha ao enviar imagem");
-          break;
-        }
-
-        added.push(data.path);
+        setUploads((current) =>
+          current.map((item) => (item.key === key ? { ...item, path, progress: 100 } : item)),
+        );
+      } catch (error) {
+        setUploads((current) =>
+          current.map((item) =>
+            item.key === key
+              ? {
+                  ...item,
+                  error: error instanceof Error ? error.message : "falha ao enviar imagem",
+                }
+              : item,
+          ),
+        );
       }
+    }
 
-      setMediaPaths((previous) => [...previous, ...added]);
-    } catch {
-      setUploadError("falha ao preparar imagem");
-    } finally {
-      setUploading(false);
-
-      if (fileInput.current) {
-        fileInput.current.value = "";
-      }
+    if (fileInput.current) {
+      fileInput.current.value = "";
     }
   }
 
@@ -143,20 +144,15 @@ export function PublicationForm({ launchCity }: PublicationFormProps) {
           required
         />
 
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-text-strong" htmlFor={`${fieldId}-content`}>
-            Texto
-          </label>
-          <textarea
-            className="min-h-32 w-full rounded-lg border border-border-subtle bg-surface-raised px-3 py-2 text-base text-text-strong placeholder:text-text-muted"
-            id={`${fieldId}-content`}
-            maxLength={5000}
-            name="content"
-            placeholder="Descreva a situação, o local e o que você espera que aconteça."
-            required
-            rows={6}
-          />
-        </div>
+        <Textarea
+          id={`${fieldId}-content`}
+          label="Texto"
+          maxLength={5000}
+          name="content"
+          placeholder="Descreva a situação, o local e o que você espera que aconteça."
+          required
+          rows={6}
+        />
 
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium text-text-strong" htmlFor={`${fieldId}-photos`}>
@@ -171,23 +167,65 @@ export function PublicationForm({ launchCity }: PublicationFormProps) {
             ref={fileInput}
             type="file"
           />
-          {uploading ? <p className="text-sm text-text-muted">Enviando imagens…</p> : null}
-          {uploadError ? (
-            <p className="text-sm text-danger" role="alert">
-              {uploadError}
-            </p>
-          ) : null}
-          {mediaPaths.length > 0 ? (
-            <ul className="flex flex-wrap gap-2">
-              {mediaPaths.map((path, index) => (
+
+          {uploads.length > 0 ? (
+            <ul className="flex flex-col gap-2">
+              {uploads.map((item) => (
                 <li
-                  className="rounded-lg border border-border-subtle px-2 py-1 text-xs text-text-muted"
-                  key={path}
+                  className="flex items-center gap-3 rounded-lg border border-border-subtle p-2"
+                  key={item.key}
                 >
-                  imagem {index + 1} pronta
+                  {/* eslint-disable-next-line @next/next/no-img-element -- preview local (blob) antes do upload */}
+                  <img
+                    alt={`Prévia de ${item.name}`}
+                    className="h-14 w-14 shrink-0 rounded-lg border border-border-subtle object-cover"
+                    src={item.previewUrl}
+                  />
+
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm text-text-body">{item.name}</p>
+
+                    {item.error ? (
+                      <p className="text-sm text-danger" role="alert">
+                        {item.error}
+                      </p>
+                    ) : item.path ? (
+                      <p className="text-sm text-success">imagem pronta</p>
+                    ) : (
+                      <div className="mt-1 flex items-center gap-2">
+                        <div
+                          aria-hidden="true"
+                          className="h-1.5 w-full overflow-hidden rounded-full bg-surface"
+                        >
+                          <div
+                            className="h-full rounded-full bg-brand-600 transition-[width]"
+                            style={{ width: `${item.progress}%` }}
+                          />
+                        </div>
+                        <span className="shrink-0 text-xs text-text-muted">
+                          {item.progress}%
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <Button
+                    className="min-h-11 shrink-0"
+                    onClick={() => removeUpload(item.key)}
+                    type="button"
+                    variant="secondary"
+                  >
+                    Remover
+                  </Button>
                 </li>
               ))}
             </ul>
+          ) : null}
+
+          {uploads.length >= MAX_IMAGES ? (
+            <p className="text-sm text-text-muted">
+              Limite de {MAX_IMAGES} imagens atingido.
+            </p>
           ) : null}
         </div>
 
@@ -222,7 +260,7 @@ export function PublicationForm({ launchCity }: PublicationFormProps) {
           </Button>
           <Link
             className="inline-flex min-h-11 items-center rounded-lg border border-border-subtle px-4 py-2 text-sm font-medium text-text-body hover:bg-surface"
-            href="/feed"
+            href="/"
           >
             Ver feed
           </Link>
