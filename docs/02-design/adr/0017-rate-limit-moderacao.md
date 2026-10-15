@@ -16,8 +16,10 @@ com uma equipe pequena, sem virar censura automática.
 
 **Denúncia** (`moderation.reports`):
 - apenas usuário autenticado com e-mail confirmado;
-- motivo em lista fechada (`spam`, `conteudo_inapropriado`, `informacao_falsa`, `assedio`,
-  `outro`) + descrição opcional;
+- motivo em lista fechada — **a lista registrada aqui estava errada e foi
+  superseded pela ADR-0023**: o conjunto implementado é `spam`,
+  `discurso_odio`, `informacao_falsa`, `conteudo_ilegal`, `assedio`, `outro`
+  (6 valores) + descrição opcional;
 - sem duplicata do mesmo usuário no mesmo conteúdo; sem auto-denúncia.
 
 **Poderes:**
