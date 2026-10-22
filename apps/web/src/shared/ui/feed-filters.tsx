@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import type { CityOption, NeighborhoodOption } from "@/contexts/geography/application/ports";
 import { Button } from "@/shared/ui/form";
 import { Select } from "@/shared/ui/select";
+import { Icon } from "@/shared/ui/icon";
 
 type SearchRequest =
   | { term: string; loading: true }
@@ -15,19 +16,11 @@ type NeighborhoodRequest =
   | { cityId: number; loading: true }
   | { cityId: number; loading: false; items: NeighborhoodOption[]; error: string | null };
 
-/** Tipos de publicação (P5) e o "todos" como estado neutro do filtro. */
 const TYPES = [
   { value: "problem", label: "Problemas" },
   { value: "idea", label: "Ideias" },
 ] as const;
 
-/**
- * Filtros do feed (T4): cidade → bairro (cascata, igual ao perfil) e tipo.
- *
- * Não é um formulário postado: navega pelo query string (`?cidade=&bairro=&tipo=`),
- * que o feed do servidor já entende. `cursor` é descartado ao filtrar para não
- * misturar página com filtro novo.
- */
 export function FeedFilters() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -46,6 +39,8 @@ export function FeedFilters() {
   const [neighborhoodRequest, setNeighborhoodRequest] = useState<NeighborhoodRequest | null>(
     cityId !== null ? { cityId, loading: true } : null,
   );
+  // SSR-safe: start collapsed on server. CSS media queries handle mobile collapse.
+  const [collapsed, setCollapsed] = useState(true);
 
   const neighborhoods =
     neighborhoodRequest !== null && !neighborhoodRequest.loading ? neighborhoodRequest.items : [];
@@ -53,7 +48,6 @@ export function FeedFilters() {
 
   const anyFilter = cityId !== null || neighborhoodId !== null || type !== null;
 
-  // Busca de cidades com debounce de 250ms (mesmo padrão do LocationPicker).
   useEffect(() => {
     if (searchRequest === null || !searchRequest.loading) {
       return;
@@ -87,7 +81,6 @@ export function FeedFilters() {
     return () => clearTimeout(timer);
   }, [searchRequest]);
 
-  // Bairros da cidade escolhida (cascata — G6: bairro sem cidade não existe).
   useEffect(() => {
     if (neighborhoodRequest === null || !neighborhoodRequest.loading) {
       return;
@@ -144,9 +137,10 @@ export function FeedFilters() {
   return (
     <section
       aria-label="Filtros do feed"
-      className="mt-4 flex flex-col gap-4 rounded-card border border-border-subtle bg-surface-raised p-4"
+      className={`mt-4 flex flex-col gap-4 rounded-card border border-border-subtle bg-surface-raised p-4 ${collapsed ? 'collapse-on-mobile' : ''}`}
     >
-      <div className="flex flex-wrap items-end gap-3">
+      {/* Always render expanded content; CSS hides it on mobile when collapsed */}
+      <div className="feed-controls flex flex-col md:flex-row items-end gap-3 md:items-start w-full">
         <div className="flex-1 text-sm font-medium text-text-strong">
           <label htmlFor={`${fieldId}-city`}>Cidade</label>
           <input
@@ -221,7 +215,7 @@ export function FeedFilters() {
         </div>
       ) : null}
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-col md:flex-row items-center gap-2 md:items-start w-full">
         <span className="text-sm font-medium text-text-strong">Tipo</span>
         <Button
           aria-pressed={type === null}
@@ -243,11 +237,30 @@ export function FeedFilters() {
           </Button>
         ))}
         {anyFilter ? (
-          <Button className="ml-auto" onClick={() => router.push("/")} type="button" variant="secondary">
+          <Button className="mt-2 md:mt-0 ml-auto md:ml-auto" onClick={() => router.push("/")} type="button" variant="secondary">
             Limpar filtros
           </Button>
         ) : null}
       </div>
+
+      {/* Mobile collapsed toggle button */}
+      {/* Mobile collapsed toggle button */}
+      {collapsed && (
+        <Button
+          onClick={() => setCollapsed(false)}
+          type="button"
+          variant="secondary"
+          className="mt-4 w-full justify-start gap-10 min-h-[44px] rounded-[10px] border border-line bg-white text-left font-semibold flex items-center desktop-hidden"
+        >
+          <Icon name="filter" size={18} className="mr-3 text-muted" />
+          <span>Filtros</span>
+          {anyFilter && (
+            <span className="ml-auto bg-accent text-white w-[21px] h-[21px] rounded-full grid place-items-center text-[11px]">
+              {cityId !== null ? 1 : 0}{neighborhoodId !== null ? 1 : 0}{type !== null ? 1 : 0}
+            </span>
+          )}
+        </Button>
+      )}
     </section>
   );
 }

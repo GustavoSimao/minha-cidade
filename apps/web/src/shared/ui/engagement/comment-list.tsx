@@ -60,8 +60,8 @@ export function CommentList({ publicationId, items, total }: CommentListProps) {
   }, [publicationId, router]);
 
   return (
-    <section className="flex flex-col gap-3">
-      <h2 className="text-lg font-semibold text-text-strong">Comentários ({total})</h2>
+    <section className="flex min-w-0 w-full flex-col gap-3">
+      <h2 className="font-display text-lg font-bold text-text-strong">Comentários ({total})</h2>
       {items.length === 0 ? (
         <EmptyState
           description="Pergunte, complemente ou conte como a situação evoluiu. Você também pode comentar sem se identificar."
@@ -69,7 +69,7 @@ export function CommentList({ publicationId, items, total }: CommentListProps) {
           title="Nenhum comentário ainda"
         />
       ) : (
-        <ul className="flex flex-col gap-3">
+        <ul className="flex min-w-0 flex-col gap-3">
           {items.map((comment) => (
             <CommentItem
               canEdit={comment.canEdit}

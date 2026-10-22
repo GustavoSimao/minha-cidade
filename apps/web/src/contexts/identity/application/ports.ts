@@ -10,6 +10,7 @@ export interface ProfileRow {
   phone: string | null;
   avatar_path: string | null;
   cover_path: string | null;
+  website: string | null;
   role: string;
   verified_org: string | null;
   is_verified: boolean;

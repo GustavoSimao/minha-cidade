@@ -1,0 +1,10 @@
+{
+  "description": "Connects local residents to discuss neighborhood issues and ideas with anonymity options, community moderation, and real-time interactions for civic engagement.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

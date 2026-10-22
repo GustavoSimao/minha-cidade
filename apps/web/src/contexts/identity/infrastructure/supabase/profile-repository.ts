@@ -5,7 +5,7 @@ import type { ProfileRepository, ProfileRow } from "@/contexts/identity/applicat
 
 /** Colunas da projeção pública (invariante I7 — nunca `email`/`phone`). */
 const PUBLIC_COLUMNS =
-  "id, username, full_name, bio, avatar_path, cover_path, role, verified_org, is_verified, city_id, neighborhood_id, show_neighborhood, created_at";
+  "id, username, full_name, bio, avatar_path, cover_path, role, verified_org, is_verified, city_id, neighborhood_id, show_neighborhood, website, created_at";
 
 /** Mapeia a linha do banco (snake_case) para o formato do domínio. */
 function toDomainRow(row: ProfileRow): Parameters<typeof Profile.rehydrate>[0] {
@@ -17,6 +17,7 @@ function toDomainRow(row: ProfileRow): Parameters<typeof Profile.rehydrate>[0] {
     phone: row.phone,
     avatarPath: row.avatar_path,
     coverPath: row.cover_path,
+    website: row.website,
     showNeighborhood: row.show_neighborhood,
     role: row.role,
     verifiedOrg: row.verified_org,
@@ -43,6 +44,7 @@ function toPublicView(row: ProfileRow): PublicProfileView {
     isVerified: row.is_verified,
     cityId: row.city_id,
     neighborhoodId: row.show_neighborhood ? row.neighborhood_id : null,
+    website: row.website,
     createdAt: new Date(row.created_at),
   };
 }
@@ -166,6 +168,7 @@ export class SupabaseProfileRepository implements ProfileRepository {
         phone: fields.phone,
         avatar_path: fields.avatarPath?.trim() ? fields.avatarPath : null,
         cover_path: fields.coverPath?.trim() ? fields.coverPath : null,
+        website: fields.website?.trim() ? fields.website : null,
         show_neighborhood: fields.showNeighborhood,
         city_id: fields.cityId,
         neighborhood_id: fields.neighborhoodId,

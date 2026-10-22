@@ -33,6 +33,29 @@ export class SupabaseEngagementRepository implements EngagementRepository {
     return data ? (data as unknown as ReactionRow) : null;
   }
 
+  async listReactionsByUser(
+    publicationIds: readonly string[],
+    userId: string,
+  ): Promise<Record<string, "support" | "oppose">> {
+    if (publicationIds.length === 0) return {};
+
+    const supabase = await createClient();
+    const { data, error } = await table(supabase, "engagement.reactions")
+      .select("publication_id, type")
+      .eq("user_id", userId)
+      .in("publication_id", [...publicationIds]);
+
+    if (error) {
+      throw new Error(`falha ao buscar reações do usuário: ${error.message}`);
+    }
+
+    return Object.fromEntries(
+      ((data ?? []) as unknown as Array<{ publication_id: string; type: string }>)
+        .filter((row): row is { publication_id: string; type: "support" | "oppose" } => row.type === "support" || row.type === "oppose")
+        .map((row) => [row.publication_id, row.type]),
+    );
+  }
+
   async insertReaction(input: {
     id: string;
     publicationId: string;
@@ -168,6 +191,72 @@ export class SupabaseEngagementRepository implements EngagementRepository {
 
     if (error) {
       throw new Error(`falha ao contar apoios do usuário: ${error.message}`);
+    }
+
+    return count ?? 0;
+  }
+
+  async countReactionsReceivedByUser(userId: string): Promise<ReactionCounts> {
+    const supabase = await createClient();
+
+    // Primeiro, buscar IDs das publicações do autor
+    const { data: pubs, error: pubsError } = await table(supabase, "publication.publications")
+      .select("id")
+      .eq("author_id", userId)
+      .is("deleted_at", null);
+
+    if (pubsError) {
+      throw new Error(`falha ao buscar publicações do autor: ${pubsError.message}`);
+    }
+
+    const publicationIds = (pubs ?? []).map((p) => p.id);
+
+    if (publicationIds.length === 0) {
+      return { support: 0, oppose: 0 };
+    }
+
+    const { data, error } = await table(supabase, "engagement.reactions")
+      .select("type")
+      .in("publication_id", publicationIds);
+
+    if (error) {
+      throw new Error(`falha ao contar reações recebidas: ${error.message}`);
+    }
+
+    const rows = (data ?? []) as unknown as { type: string }[];
+
+    return {
+      support: rows.filter((row) => row.type === "support").length,
+      oppose: rows.filter((row) => row.type === "oppose").length,
+    };
+  }
+
+  async countCommentsReceivedByUser(userId: string): Promise<number> {
+    const supabase = await createClient();
+
+    const { data: pubs, error: pubsError } = await table(supabase, "publication.publications")
+      .select("id")
+      .eq("author_id", userId)
+      .is("deleted_at", null);
+
+    if (pubsError) {
+      throw new Error(`falha ao buscar publicações do autor: ${pubsError.message}`);
+    }
+
+    const publicationIds = (pubs ?? []).map((p) => p.id);
+
+    if (publicationIds.length === 0) {
+      return 0;
+    }
+
+    const { count, error } = await table(supabase, "engagement.comments")
+      .select("id", { count: "exact", head: true })
+      .in("publication_id", publicationIds)
+      .is("deleted_at", null)
+      .is("hidden_at", null);
+
+    if (error) {
+      throw new Error(`falha ao contar comentários recebidos: ${error.message}`);
     }
 
     return count ?? 0;

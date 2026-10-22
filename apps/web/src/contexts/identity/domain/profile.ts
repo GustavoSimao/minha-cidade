@@ -22,6 +22,7 @@ export interface PublicProfileView {
   isVerified: boolean;
   cityId: number | null;
   neighborhoodId: string | null;
+  website: string | null;
   createdAt: Date;
 }
 
@@ -36,6 +37,7 @@ export interface ProfileEditableFields {
   showNeighborhood: boolean;
   cityId: number | null;
   neighborhoodId: string | null;
+  website: string | null;
 }
 
 /**
@@ -55,6 +57,7 @@ export class Profile extends Entity<ProfileId> {
   private _phone: string | null;
   private _avatarPath: string | null;
   private _coverPath: string | null;
+  private _website: string | null;
   private _showNeighborhood: boolean;
   private _role: Role;
   private _verifiedOrg: VerifiedOrg | null;
@@ -70,6 +73,7 @@ export class Profile extends Entity<ProfileId> {
     phone: string | null;
     avatarPath: string | null;
     coverPath: string | null;
+    website: string | null;
     showNeighborhood: boolean;
     role: Role;
     verifiedOrg: VerifiedOrg | null;
@@ -84,6 +88,7 @@ export class Profile extends Entity<ProfileId> {
     this._phone = params.phone;
     this._avatarPath = params.avatarPath;
     this._coverPath = params.coverPath;
+    this._website = params.website;
     this._showNeighborhood = params.showNeighborhood;
     this._role = params.role;
     this._verifiedOrg = params.verifiedOrg;
@@ -106,6 +111,7 @@ export class Profile extends Entity<ProfileId> {
       phone: null,
       avatarPath: null,
       coverPath: null,
+      website: null,
       showNeighborhood: true,
       role: Role.user(),
       verifiedOrg: null,
@@ -125,6 +131,7 @@ export class Profile extends Entity<ProfileId> {
     avatarPath: string | null;
     coverPath: string | null;
     showNeighborhood?: boolean;
+    website: string | null;
     role: string;
     verifiedOrg: string | null;
     cityId: number | null;
@@ -139,6 +146,7 @@ export class Profile extends Entity<ProfileId> {
       phone: row.phone,
       avatarPath: row.avatarPath,
       coverPath: row.coverPath,
+      website: row.website,
       showNeighborhood: row.showNeighborhood ?? true,
       role: Role.create(row.role),
       verifiedOrg: row.verifiedOrg ? VerifiedOrg.create(row.verifiedOrg) : null,
@@ -188,6 +196,10 @@ export class Profile extends Entity<ProfileId> {
     return this._coverPath;
   }
 
+  public get website(): string | null {
+    return this._website;
+  }
+
   /** Expor o bairro na projeção pública (preferência do dono — I7). */
   public get showNeighborhood(): boolean {
     return this._showNeighborhood;
@@ -206,6 +218,7 @@ export class Profile extends Entity<ProfileId> {
     // Caminho vazio significa "sem imagem" (remoção) — normalizado para null.
     this._avatarPath = fields.avatarPath?.trim() ? fields.avatarPath : null;
     this._coverPath = fields.coverPath?.trim() ? fields.coverPath : null;
+    this._website = fields.website?.trim() ? fields.website : null;
     this._showNeighborhood = fields.showNeighborhood;
 
     // Bairro só pode ser definido junto com a cidade.
@@ -224,6 +237,7 @@ export class Profile extends Entity<ProfileId> {
         "media",
         "preferences",
         "location",
+        "website",
       ]),
     );
   }
@@ -234,7 +248,8 @@ export class Profile extends Entity<ProfileId> {
   }
 
   /** Projeção pública — a única forma de expor o perfil para terceiros (I7). */
-  public toPublicView(createdAt: Date): PublicProfileView {    return {
+  public toPublicView(createdAt: Date): PublicProfileView {
+    return {
       id: this.id.value,
       username: this._username.value,
       fullName: this._fullName.value,
@@ -247,6 +262,7 @@ export class Profile extends Entity<ProfileId> {
       cityId: this._cityId,
       // I7: o bairro só é projetado quando o dono permite.
       neighborhoodId: this._showNeighborhood ? this._neighborhoodId : null,
+      website: this._website,
       createdAt,
     };
   }

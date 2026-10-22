@@ -95,9 +95,19 @@ function makeRepo(overrides: Partial<EngagementRepository> = {}): EngagementRepo
       return result;
     },
 
-    async countSupportedByUser() {
+async countSupportedByUser() {
       return [...reactionRows.values()].filter((row) => row.type === "support").length;
     },
+
+    async countReactionsReceivedByUser() {
+      // Simplificado: retorna contadores zerados no fake
+      return { support: 0, oppose: 0 };
+    },
+
+    async countCommentsReceivedByUser() {
+      return 0;
+    },
+
     async listComments(publicationId, options) {
       const all = [...commentRows.values()]
         .filter((row) => row.publication_id === publicationId)

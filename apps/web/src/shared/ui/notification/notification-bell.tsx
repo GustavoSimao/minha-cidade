@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { createBrowserSupabase } from "@/shared/infrastructure/supabase-browser";
@@ -56,7 +57,7 @@ function NotificationBellInner({ unreadCount, userId }: NotificationBellProps) {
   }, [router, userId]);
 
   return (
-    <a
+    <Link
       aria-label={`Notificações: ${count} não lidas`}
       className="relative inline-flex min-h-11 items-center rounded-lg px-3 py-2 text-text-body hover:bg-brand-50 hover:text-brand-700"
       href="/notificacoes"
@@ -69,6 +70,6 @@ function NotificationBellInner({ unreadCount, userId }: NotificationBellProps) {
           {count > 99 ? "99+" : count}
         </span>
       ) : null}
-    </a>
+    </Link>
   );
 }

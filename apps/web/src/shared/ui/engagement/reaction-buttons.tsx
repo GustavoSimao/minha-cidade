@@ -11,6 +11,7 @@ export interface ReactionButtonsProps {
   counts: { support: number; oppose: number };
   myReaction: "support" | "oppose" | null;
   canInteract: boolean;
+  subscribeRealtime?: boolean;
 }
 
 /**
@@ -23,10 +24,12 @@ export function ReactionButtons({
   counts,
   myReaction,
   canInteract,
+  subscribeRealtime = true,
 }: ReactionButtonsProps) {
   const router = useRouter();
 
   useEffect(() => {
+    if (!subscribeRealtime) return;
     const supabase = createBrowserSupabase();
 
     const channel = supabase
@@ -46,7 +49,7 @@ export function ReactionButtons({
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [publicationId, router]);
+  }, [publicationId, router, subscribeRealtime]);
 
   function submit(formData: FormData) {
     if (!canInteract) {
@@ -57,10 +60,14 @@ export function ReactionButtons({
     void toggleReactionAction({}, formData).then(() => router.refresh());
   }
 
-  const style = (active: boolean) =>
-    active
-      ? "min-h-11 rounded-lg border border-brand-600 bg-brand-50 px-4 py-2 text-sm font-semibold text-brand-700"
-      : "min-h-11 rounded-lg border border-border-subtle px-4 py-2 text-sm font-medium text-text-body hover:bg-surface";
+  const style = (active: boolean, down = false) =>
+    `inline-flex min-h-11 min-w-[68px] items-center justify-center gap-1.5 rounded-full border px-3 py-2 text-sm font-semibold transition focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand ${
+      active
+        ? down
+          ? "border-danger bg-danger-pale text-danger"
+          : "border-brand-600 bg-brand-50 text-brand-700"
+        : "border-border-subtle bg-white text-text-body hover:bg-surface"
+    }`;
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -69,10 +76,15 @@ export function ReactionButtons({
         <input name="type" type="hidden" value="support" />
         <button
           aria-pressed={myReaction === "support"}
+          aria-label={`Votar a favor; ${counts.support} votos`}
           className={style(myReaction === "support")}
           type="submit"
+          title="Votar a favor"
         >
-          Apoio · {counts.support}
+          <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 20 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10 16V4m-5 5 5-5 5 5" />
+          </svg>
+          <span>{counts.support}</span>
         </button>
       </form>
 
@@ -81,10 +93,15 @@ export function ReactionButtons({
         <input name="type" type="hidden" value="oppose" />
         <button
           aria-pressed={myReaction === "oppose"}
-          className={style(myReaction === "oppose")}
+          aria-label={`Votar contra; ${counts.oppose} votos`}
+          className={style(myReaction === "oppose", true)}
           type="submit"
+          title="Votar contra"
         >
-          Oposição · {counts.oppose}
+          <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 20 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10 4v12m5-5-5 5-5-5" />
+          </svg>
+          <span>{counts.oppose}</span>
         </button>
       </form>
     </div>

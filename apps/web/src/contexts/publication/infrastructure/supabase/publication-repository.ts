@@ -164,7 +164,7 @@ export class SupabasePublicationRepository implements PublicationRepository {
 
   /**
    * Publicações públicas de um autor, mais recentes primeiro (leitura pública).
-   * Usado no perfil (B5): a autoria anônima é resolvida pela interface (P4).
+   * Usado no perfil (B5): publicações anônimas não são associadas ao perfil (P4).
    */
   async listPublicByAuthor(
     authorId: string,
@@ -176,6 +176,7 @@ export class SupabasePublicationRepository implements PublicationRepository {
     const { data, error } = await table(supabase, "publication.publications")
       .select(COLUMNS)
       .eq("author_id", authorId)
+      .eq("is_anonymous", false)
       .is("deleted_at", null)
       .is("hidden_at", null)
       .order("created_at", { ascending: false })
@@ -188,13 +189,14 @@ export class SupabasePublicationRepository implements PublicationRepository {
     return { rows: (data ?? []) as unknown as PublicationRow[] };
   }
 
-  /** Contagem pública de publicações do autor (contador do perfil — P6). */
+  /** Contagem de publicações identificadas do autor (contador do perfil — P6). */
   async countPublicByAuthor(authorId: string): Promise<number> {
     const supabase = await createClient();
 
     const { count, error } = await table(supabase, "publication.publications")
       .select("id", { count: "exact", head: true })
       .eq("author_id", authorId)
+      .eq("is_anonymous", false)
       .is("deleted_at", null)
       .is("hidden_at", null);
 

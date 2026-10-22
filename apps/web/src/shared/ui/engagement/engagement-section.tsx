@@ -12,9 +12,11 @@ import { CommentForm } from "./comment-form";
 import { CommentList } from "./comment-list";
 import { ReactionButtons } from "./reaction-buttons";
 import { SaveButton } from "./save-button";
+import { ShareButton } from "./share-button";
 
 export interface EngagementSectionProps {
   publicationId: string;
+  publicationTitle: string;
   session: EngagementSession | null;
 }
 
@@ -27,6 +29,7 @@ export interface EngagementSectionProps {
  */
 export async function EngagementSection({
   publicationId,
+  publicationTitle,
   session,
 }: EngagementSectionProps) {
   const engagements = new SupabaseEngagementRepository();
@@ -56,6 +59,7 @@ export async function EngagementSection({
           publicationId={publicationId}
           saved={summary.saved}
         />
+        <ShareButton publicationId={publicationId} title={publicationTitle} />
       </div>
 
       <CommentForm canInteract={canInteract} publicationId={publicationId} />

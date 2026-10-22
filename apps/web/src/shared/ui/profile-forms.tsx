@@ -1,7 +1,6 @@
 "use client";
 
-import { useActionState, useId, useRef, useState } from "react";
-import Link from "next/link";
+import { useActionState, useEffect, useId, useRef, useState } from "react";
 
 import {
   closeAccountAction,
@@ -14,6 +13,8 @@ import { Alert, Button, Card, TextField } from "@/shared/ui/form";
 import { LocationPicker } from "@/shared/ui/location-picker";
 import { Textarea } from "@/shared/ui/text-area";
 import { resizeToWebp, uploadImage } from "@/shared/ui/upload-image";
+import { Avatar } from "@/shared/ui/avatar";
+import { Icon } from "@/shared/ui/icon";
 
 /** Dados do perfil próprio necessários ao formulário. */
 export interface OwnProfileFormData {
@@ -34,6 +35,7 @@ export interface OwnProfileFormData {
   verifiedOrg: string | null;
   role: string;
   emailConfirmed: boolean;
+  website: string | null;
 }
 
 /** Imagem em envio: preview local + progresso + caminho no Storage ao concluir. */
@@ -60,6 +62,7 @@ function ProfileImageField({
   onPathChange,
   fieldId,
   testId,
+  ownerName,
 }: {
   kind: "avatars" | "covers";
   label: string;
@@ -69,15 +72,30 @@ function ProfileImageField({
   onPathChange: (path: string) => void;
   fieldId: string;
   testId: string;
+  ownerName: string;
 }) {
   const fileInput = useRef<HTMLInputElement>(null);
   const [upload, setUpload] = useState<ImageUploadState | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [storedPath, setStoredPath] = useState<string | null>(currentPath);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const uploading = upload !== null && upload.path === null && upload.error === null;
   const effectivePath = storedPath ?? "";
   const displayUrl = previewUrl ?? (effectivePath ? currentUrl : null);
+
+  useEffect(() => {
+    if (!dialogOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setDialogOpen(false);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [dialogOpen]);
+
+  useEffect(() => () => {
+    if (previewUrl?.startsWith("blob:")) URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
 
   async function onFilesSelected(files: FileList | null) {
     const file = files?.[0];
@@ -85,6 +103,7 @@ function ProfileImageField({
       return;
     }
 
+    if (previewUrl?.startsWith("blob:")) URL.revokeObjectURL(previewUrl);
     const objectUrl = URL.createObjectURL(file);
     setPreviewUrl(objectUrl);
     setUpload({ progress: 0, path: null, error: null, name: file.name });
@@ -116,6 +135,7 @@ function ProfileImageField({
   }
 
   function remove() {
+    if (previewUrl?.startsWith("blob:")) URL.revokeObjectURL(previewUrl);
     setStoredPath(null);
     setPreviewUrl(null);
     setUpload(null);
@@ -126,66 +146,79 @@ function ProfileImageField({
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <label className="text-sm font-medium text-text-strong" htmlFor={fieldId}>
-        {label}
-      </label>
-
-      <div className="flex flex-wrap items-center gap-3">
-        {displayUrl ? (
-          /* eslint-disable-next-line @next/next/no-img-element -- prévia local (blob) ou URL pública do Storage */
-          <img
-            alt={`Prévia de ${label.toLowerCase()}`}
-            className={
-              kind === "avatars"
-                ? "h-20 w-20 rounded-full border border-border-subtle object-cover"
-                : "h-14 w-28 rounded-lg border border-border-subtle object-cover"
-            }
-            data-testid={testId}
-            src={displayUrl}
-          />
-        ) : null}
-
-        <div className="flex flex-wrap items-center gap-2">
-          <input
-            accept="image/*"
-            className="min-h-11 max-w-64 rounded-lg border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-text-body"
-            id={fieldId}
-            onChange={(event) => void onFilesSelected(event.target.files)}
-            ref={fileInput}
-            type="file"
-          />
-          {effectivePath ? (
-            <Button onClick={remove} type="button" variant="secondary">
-              Remover
-            </Button>
-          ) : null}
-        </div>
-      </div>
-
-      <input name={kind === "avatars" ? "avatarPath" : "coverPath"} type="hidden" value={effectivePath} />
-
-      {upload?.error ? (
-        <p className="text-sm text-danger" role="alert">
-          {upload.error}
-        </p>
-      ) : uploading ? (
-        <div className="flex items-center gap-2">
-          <div
-            aria-hidden="true"
-            className="h-1.5 w-full max-w-64 overflow-hidden rounded-full bg-surface"
-          >
-            <div
-              className="h-full rounded-full bg-brand-600 transition-[width]"
-              style={{ width: `${upload.progress}%` }}
-            />
-          </div>
-          <span className="shrink-0 text-xs text-text-muted">{upload.progress}%</span>
+    <>
+      {kind === "covers" ? (
+        <div
+          aria-label="Capa do perfil"
+          className="relative h-32 w-full bg-brand-700 sm:h-44"
+          data-testid={testId}
+          role="img"
+          style={displayUrl ? { backgroundImage: `url(${displayUrl})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
+        >
+          <button
+            aria-label="Editar foto de capa"
+            className="absolute right-3 top-3 grid h-11 w-11 place-items-center rounded-lg border border-line bg-white text-brand shadow-sm hover:bg-surface"
+            onClick={() => setDialogOpen(true)}
+            type="button"
+          ><Icon name="image" size={19} /></button>
         </div>
       ) : (
-        <p className="text-xs text-text-muted">{hint}</p>
+        <div className="relative h-[88px] w-[88px] shrink-0">
+          <Avatar className="border-4 border-white shadow-sm" imageUrl={displayUrl} name={ownerName} size={88} />
+          <button
+            aria-label="Editar foto de perfil"
+            className="absolute bottom-0 right-0 grid h-11 w-11 place-items-center rounded-full border border-line bg-white text-brand shadow-sm hover:bg-surface"
+            onClick={() => setDialogOpen(true)}
+            type="button"
+          ><Icon name="image" size={18} /></button>
+        </div>
       )}
-    </div>
+      <input
+        accept="image/*"
+        className="sr-only"
+        id={fieldId}
+        onChange={(event) => void onFilesSelected(event.target.files)}
+        ref={fileInput}
+        type="file"
+      />
+      {upload?.error ? <p className="mt-2 text-sm text-danger" role="alert">{upload.error}</p> : null}
+      {uploading ? (
+        <div className="mt-2 flex items-center gap-2" aria-live="polite">
+          <div aria-hidden="true" className="h-1.5 w-full max-w-64 overflow-hidden bg-surface">
+            <div className="h-full bg-brand-600 transition-[width]" style={{ width: `${upload.progress}%` }} />
+          </div>
+          <span className="shrink-0 text-xs text-text-muted">Enviando {upload.progress}%</span>
+        </div>
+      ) : null}
+      {dialogOpen ? (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-ink/55 p-4">
+          <button aria-label="Fechar opções da foto" className="absolute inset-0" onClick={() => setDialogOpen(false)} tabIndex={-1} type="button" />
+          <section aria-labelledby={`${fieldId}-dialog-title`} aria-modal="true" className="relative z-10 w-full max-w-lg border border-line bg-white p-5 shadow-modal sm:p-6" role="dialog">
+            <header className="mb-4 flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-ink" id={`${fieldId}-dialog-title`}>{label}</h2>
+                <p className="mt-1 text-sm text-muted">{displayUrl ? "Veja a foto atual ou escolha outra." : "Adicione uma foto ao seu perfil."}</p>
+              </div>
+              <button aria-label="Fechar" className="grid h-11 w-11 shrink-0 place-items-center border border-line hover:bg-soft" onClick={() => setDialogOpen(false)} type="button"><Icon name="close" size={19} /></button>
+            </header>
+            {displayUrl ? (
+              /* eslint-disable-next-line @next/next/no-img-element -- prévia local (blob) ou imagem pública do Storage */
+              <img alt={label} className={kind === "avatars" ? "mx-auto mb-5 h-56 w-56 rounded-full border border-line object-cover" : "mb-5 max-h-[52vh] w-full object-contain"} src={displayUrl} />
+            ) : (
+              <p className="mb-5 border-y border-line py-5 text-sm text-muted">Nenhuma foto foi adicionada ainda.</p>
+            )}
+            <div className="flex flex-wrap gap-2">
+              <Button className="min-h-11" disabled={uploading} onClick={() => fileInput.current?.click()} type="button">
+                {displayUrl ? "Escolher outra foto" : "Enviar foto"}
+              </Button>
+              {effectivePath ? <Button className="min-h-11" onClick={remove} type="button" variant="danger">Remover foto</Button> : null}
+            </div>
+            {upload?.error ? <p className="mt-3 text-sm text-danger" role="alert">{upload.error}</p> : null}
+            <p className="mt-3 text-xs text-muted">{hint}</p>
+          </section>
+        </div>
+      ) : null}
+    </>
   );
 }
 
@@ -201,11 +234,47 @@ export function ProfileForm({ profile }: { profile: OwnProfileFormData }) {
   const [coverPath, setCoverPath] = useState(profile.coverPath ?? "");
 
   return (
+    <>
+    <section className="overflow-hidden rounded-[24px] border border-line bg-white shadow-stamp">
+      <ProfileImageField
+        currentPath={coverPath}
+        currentUrl={coverPath ? publicStorageUrl("covers", coverPath) : null}
+        fieldId={`${fieldId}-cover`}
+        hint="Capa do perfil (WebP, até 10 MiB)."
+        kind="covers"
+        label="Foto de capa"
+        onPathChange={setCoverPath}
+        ownerName={profile.fullName}
+        testId="cover-preview"
+      />
+      <div className="flex items-center gap-4 px-5 py-5 sm:px-8">
+        <ProfileImageField
+          currentPath={avatarPath}
+          currentUrl={avatarPath ? publicStorageUrl("avatars", avatarPath) : null}
+          fieldId={`${fieldId}-avatar`}
+          hint="Foto de perfil (WebP, até 10 MiB)."
+          kind="avatars"
+          label="Foto de perfil"
+          onPathChange={setAvatarPath}
+          ownerName={profile.fullName}
+          testId="avatar-preview"
+        />
+        <div className="min-w-0">
+          <h2 className="font-display text-xl font-bold text-text-strong">{profile.fullName}</h2>
+          <p className="mt-1 text-sm text-muted">@{profile.username}</p>
+          {profile.bio ? <p className="mt-3 max-w-2xl whitespace-pre-line text-sm leading-6 text-text-body">{profile.bio}</p> : null}
+          {profile.cityName ? <p className="mt-2 text-sm text-muted">{profile.cityName}{profile.cityUf ? ` — ${profile.cityUf}` : ""}</p> : null}
+        </div>
+      </div>
+    </section>
+
     <Card
       description="Seu nome de usuário (@) e seu papel não podem ser alterados aqui."
       title="Editar perfil"
     >
       <form action={formAction} className="flex flex-col gap-4">
+        <input name="avatarPath" type="hidden" value={avatarPath} />
+        <input name="coverPath" type="hidden" value={coverPath} />
         <TextField
           autoComplete="name"
           defaultValue={profile.fullName}
@@ -228,30 +297,6 @@ export function ProfileForm({ profile }: { profile: OwnProfileFormData }) {
           maxLength={2000}
           name="bio"
           rows={4}
-        />
-
-        <ProfileImageField
-          currentPath={avatarPath}
-          currentUrl={
-            avatarPath ? publicStorageUrl("avatars", avatarPath) : null
-          }
-          fieldId={`${fieldId}-avatar`}
-          hint="Foto de perfil (WebP, até 10 MiB)."
-          kind="avatars"
-          label="Foto de perfil"
-          onPathChange={setAvatarPath}
-          testId="avatar-preview"
-        />
-
-        <ProfileImageField
-          currentPath={coverPath}
-          currentUrl={coverPath ? publicStorageUrl("covers", coverPath) : null}
-          fieldId={`${fieldId}-cover`}
-          hint="Imagem de capa do perfil (WebP, até 10 MiB)."
-          kind="covers"
-          label="Capa do perfil"
-          onPathChange={setCoverPath}
-          testId="cover-preview"
         />
 
         <fieldset className="flex flex-col gap-3">
@@ -279,6 +324,14 @@ export function ProfileForm({ profile }: { profile: OwnProfileFormData }) {
           </p>
         </fieldset>
 
+        <TextField
+          defaultValue={profile.website ?? ""}
+          label="Site / Link público"
+          name="website"
+          placeholder="https://exemplo.com"
+          type="url"
+        />
+
         {state.error ? <Alert tone="error">{state.error}</Alert> : null}
         {state.message ? <Alert tone="success">{state.message}</Alert> : null}
 
@@ -286,15 +339,10 @@ export function ProfileForm({ profile }: { profile: OwnProfileFormData }) {
           <Button disabled={pending} type="submit">
             {pending ? "Salvando…" : "Salvar alterações"}
           </Button>
-          <Link
-            className="inline-flex min-h-11 items-center rounded-lg border border-border-subtle px-4 py-2 text-sm font-medium text-text-body hover:bg-surface"
-            href={`/perfil/${profile.username}`}
-          >
-            Ver perfil público
-          </Link>
         </div>
       </form>
     </Card>
+    </>
   );
 }
 

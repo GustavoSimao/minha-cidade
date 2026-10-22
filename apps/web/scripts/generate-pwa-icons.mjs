@@ -13,8 +13,8 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const BRAND = [30, 91, 69]; // --color-brand-600 #1e5b45
-const BRAND_DARK = [23, 72, 53]; // --color-brand-700 #174835
+const BRAND = [11, 108, 112]; // --color-brand-600 #0b6c70
+const BRAND_DARK = [7, 81, 85]; // --color-brand-700 #075155
 const WHITE = [255, 255, 255];
 
 function crc32(buffer) {
@@ -157,6 +157,7 @@ function render(size, { maskable = false } = {}) {
 
 const here = dirname(fileURLToPath(import.meta.url));
 const iconsDir = join(here, "..", "public", "icons");
+const appIconsDir = join(here, "..", "src", "app");
 mkdirSync(iconsDir, { recursive: true });
 
 const targets = [
@@ -171,3 +172,22 @@ for (const target of targets) {
   writeFileSync(join(iconsDir, target.name), png);
   console.log(`${target.name} — ${png.length} bytes`);
 }
+
+const appIcon = render(512);
+const appleIcon = render(180);
+writeFileSync(join(appIconsDir, "icon.png"), appIcon);
+writeFileSync(join(appIconsDir, "apple-icon.png"), appleIcon);
+
+const faviconPng = render(256);
+const favicon = Buffer.alloc(22 + faviconPng.length);
+favicon.writeUInt16LE(1, 2); // ICO resource type
+favicon.writeUInt16LE(1, 4); // one image
+favicon[6] = 0; // 256px
+favicon[7] = 0; // 256px
+favicon.writeUInt16LE(1, 10); // color planes
+favicon.writeUInt16LE(32, 12); // bits per pixel
+favicon.writeUInt32LE(faviconPng.length, 14);
+favicon.writeUInt32LE(22, 18);
+faviconPng.copy(favicon, 22);
+writeFileSync(join(appIconsDir, "favicon.ico"), favicon);
+console.log(`App Router icons updated — ${appIcon.length}, ${appleIcon.length}, ${favicon.length} bytes`);

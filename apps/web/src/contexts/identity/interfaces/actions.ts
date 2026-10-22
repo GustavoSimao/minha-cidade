@@ -151,6 +151,7 @@ export async function updateProfileAction(
     avatarPath: formData.has("avatarPath") ? first(formData, "avatarPath") : undefined,
     coverPath: formData.has("coverPath") ? first(formData, "coverPath") : undefined,
     showNeighborhood: check(formData, "showNeighborhood"),
+    website: first(formData, "website") || null,
     cityId,
     neighborhoodId,
   });

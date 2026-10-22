@@ -9,6 +9,7 @@ import { Button } from "@/shared/ui/form";
 import { Avatar } from "@/shared/ui/avatar";
 import { Badge } from "@/shared/ui/badge";
 import { Textarea } from "@/shared/ui/text-area";
+import { Icon } from "@/shared/ui/icon";
 
 export interface CommentItemProps {
   comment: {
@@ -43,9 +44,9 @@ export function CommentItem({
   }).format(comment.createdAt);
 
   return (
-    <li className="rounded-lg border border-border-subtle p-3">
-      <div className="flex items-center gap-2 text-sm">
-        {comment.author !== null ? (
+    <li className="min-w-0 rounded-2xl border border-border-subtle bg-white p-4 shadow-stamp sm:p-5">
+      <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+        {comment.author !== null && !comment.isAnonymous ? (
           <>
             <Avatar
               imageUrl={comment.author.avatarPath}
@@ -63,14 +64,13 @@ export function CommentItem({
           </>
         ) : (
           <>
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-surface text-xs font-semibold text-text-muted">
-              Anônimo
+            <span aria-hidden="true" className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface text-text-muted">
+              <Icon name="user" size={16} />
             </span>
-            <span className="font-semibold text-text-muted">Morador anônimo</span>
+            <span className="min-w-0 break-words font-semibold text-text-muted">Morador anônimo</span>
           </>
         )}
-        <span className="text-text-muted">{created}</span>
-        {comment.editedAt ? <span className="text-text-muted">· editado</span> : null}
+        <span className="basis-full pt-1 text-xs text-text-muted sm:ml-auto sm:basis-auto sm:pt-0">{created}{comment.editedAt ? " · editado" : ""}</span>
       </div>
 
       {editing ? (
@@ -103,16 +103,16 @@ export function CommentItem({
           </div>
         </form>
       ) : (
-        <p className="mt-1 whitespace-pre-line text-base text-text-body">
+        <p className="mt-2 min-w-0 whitespace-pre-wrap break-words text-base leading-7 text-text-body [overflow-wrap:anywhere]">
           {comment.content}
         </p>
       )}
 
       {isMine && !editing ? (
-        <div className="mt-2 flex items-center gap-3 text-sm">
+        <div className="mt-3 flex flex-wrap items-center gap-4 text-sm">
           {canEdit ? (
             <button
-              className="text-brand-600 hover:underline"
+              className="inline-flex min-h-11 items-center text-brand-600 hover:underline"
               onClick={() => setEditing(true)}
               type="button"
             >
@@ -123,7 +123,7 @@ export function CommentItem({
             <input name="commentId" type="hidden" value={comment.id} />
             <input name="publicationId" type="hidden" value={publicationId} />
             <button
-              className="text-danger hover:underline"
+              className="inline-flex min-h-11 items-center text-danger hover:underline"
               disabled={deletePending}
               type="submit"
             >

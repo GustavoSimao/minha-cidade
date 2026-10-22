@@ -9,7 +9,6 @@ import {
 import { SupabaseAuthGateway } from "@/contexts/identity/infrastructure/supabase/auth-gateway";
 import { SupabaseProfileRepository } from "@/contexts/identity/infrastructure/supabase/profile-repository";
 import { signOutAction } from "@/contexts/identity/interfaces/actions";
-import { BellIcon, InboxIcon, UsersIcon } from "@/shared/ui/icon";
 import { NotificationBell } from "@/shared/ui/notification/notification-bell";
 
 /**
@@ -135,65 +134,6 @@ export async function SiteHeader() {
       </div>
       </header>
 
-      {/* Barra inferior no celular (B7): 4 destinos com alvo de toque ≥ 44px.
-          Só mobile — em `sm+` o cabeçalho já tem todos os links. */}
-      <nav
-        aria-label="Navegação principal"
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-border-subtle bg-surface-raised pb-[env(safe-area-inset-bottom)] sm:hidden"
-      >
-        <div className="mx-auto flex max-w-lg items-stretch justify-around">
-          <Link
-            className="flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 px-2 py-1.5 text-text-body hover:bg-brand-50 hover:text-brand-700"
-            href="/"
-          >
-            <InboxIcon className="h-5 w-5" />
-            <span className="text-xs">Feed</span>
-          </Link>
-
-          <Link
-            className="flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 px-2 py-1.5 text-text-body hover:bg-brand-50 hover:text-brand-700"
-            href={session ? "/publicar" : "/login?next=/publicar"}
-          >
-            <span aria-hidden="true" className="flex h-5 w-5 items-center justify-center text-lg font-semibold leading-none">
-              +
-            </span>
-            <span className="text-xs">Publicar</span>
-          </Link>
-
-          {session ? (
-            <>
-              <Link
-                className="relative flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 px-2 py-1.5 text-text-body hover:bg-brand-50 hover:text-brand-700"
-                href="/notificacoes"
-              >
-                <BellIcon className="h-5 w-5" />
-                <span className="text-xs">Avisos</span>
-                {unreadCount > 0 ? (
-                  <span className="absolute right-1/4 top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-600 px-1 text-[10px] font-bold text-white">
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </span>
-                ) : null}
-              </Link>
-
-              <Link
-                className="flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 px-2 py-1.5 text-text-body hover:bg-brand-50 hover:text-brand-700"
-                href={username ? `/perfil/${username}` : "/perfil/editar"}
-              >
-                <UsersIcon className="h-5 w-5" />
-                <span className="text-xs">Perfil</span>
-              </Link>
-            </>
-          ) : (
-            <Link
-              className="flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 px-2 py-1.5 text-text-body hover:bg-brand-50 hover:text-brand-700"
-              href="/login"
-            >
-              <UsersIcon className="h-5 w-5" />
-              <span className="text-xs">Entrar</span>
-            </Link>
-          )}
-        </div>
-      </nav>
     </>
   );
 }

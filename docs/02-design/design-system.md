@@ -12,46 +12,46 @@ Base para as telas. Objetivo: consistência, acessibilidade AA e performance em 
 
 ## 2. Tokens
 
-> Identidade visual definida no ADR-0022 ("praça/municipal"): concreto frio, papel branco,
-> tinta escura e um único acento verde-garrafa, com display serifado nos títulos. O par
-> creme + ocre foi descartado porque o detector do repo marca esse cluster como
-> tell de design gerado (SD1).
+> A referência canônica é `referencia-rede-social-local/` (ADR-0024): verde azulado, coral,
+> âmbar de categoria, papel branco e fundo verde muito claro. O coral de ações foi escurecido
+> no app para manter contraste AA com texto branco; o restante da referência é preservado.
 
 ### Cor
 
 | Token | Uso | Valor | Contraste (AA) |
 |---|---|---|---|
-| `--color-brand-600` | ações primárias, links | verde-garrafa `#1e5b45` | 7.96:1 em branco |
-| `--color-brand-700` | hover de ação/link | `#174835` | 10.42:1 em branco |
-| `--color-brand-50` | fundo de destaque, hover | `#eaf3ee` | — |
-| `--color-brand-100` | chip institucional | `#d3e6dc` | — |
-| `--color-surface` | fundo da página (concreto) | `#ececea` | — |
+| `--color-brand-600` | ações e links | teal `#0b6c70` | 6.19:1 em branco |
+| `--color-brand-700` | hover de ação/link | `#075155` | 9.06:1 em branco |
+| `--color-brand-50` | fundo de destaque, hover | `#dceeed` | — |
+| `--color-brand-100` | chip institucional | `#c4e0de` | — |
+| `--color-accent` | ação coral | `#b54230` | 5.55:1 em branco |
+| `--color-idea` | marcador de ideia | âmbar `#d59b26` | decorativo; rótulo usa `#966811` |
+| `--color-surface` | fundo da página | `#f2f7f5` | — |
 | `--color-surface-raised` | cartões, cabeçalho (papel) | `#ffffff` | — |
-| `--color-border-subtle` | bordas de cartão | `#d8d9d6` | — |
-| `--color-text-strong` | títulos (display serifada) | `#1c1917` | 17.5:1 em branco |
-| `--color-text-body` | corpo de texto | `#44403c` | 10.3:1 em branco |
-| `--color-text-muted` | metadados, datas | `#6a6357` | 5.94:1 em branco |
-| `--color-success` | confirmações, badge "Ideia" | `#4d7c0f` | — |
-| `--color-danger` | remover, negar, erro | `#b3261e` | 6.5:1 em branco |
-| `--color-danger-hover` | hover do destrutivo | `#8c1d18` | 9.1:1 em branco |
-| `--color-warning` | atenção, badge "moderação" | `#8a5a00` | — |
-| `--color-danger-bg` / `-border` | fundo/borda de erro | `#fdecea` / `#f3d6d2` | — |
-| `--color-warning-bg` / `-border` | fundo/borda de atenção | `#fbf3e2` / `#eedfc0` | — |
-| `--color-success-bg` | fundo de badge "Ideia" | `#f1f7e4` | — |
-| `--shadow-stamp` | sombra dura de cartão/botão | `2px 2px 0 rgb(28 25 23 / 0.08)` | — |
+| `--color-border-subtle` | bordas de cartão | `#dfe8e6` | — |
+| `--color-text-strong` | títulos | `#17353b` | 12.8:1 em branco |
+| `--color-text-body` | corpo de texto | `#52686c` | 5.91:1 em branco |
+| `--color-text-muted` | metadados, datas | `#5f7073` | 5.18:1 em branco |
+| `--color-success` | confirmações | `#4d7c0f` | — |
+| `--color-danger` | remover, negar, erro | `#b53832` | 5.29:1 em `#fff0ec` |
+| `--color-danger-hover` | hover do destrutivo | `#a83a35` | — |
+| `--color-warning` | atenção, badge "moderação" | `#8a5a00` | 5.50:1 em `#fff6de` |
+| `--color-danger-bg` / `-border` | fundo/borda de erro | `#fff0ec` / `#e9c4c0` | — |
+| `--color-warning-bg` / `-border` | fundo/borda de atenção | `#fff6de` / `#eed8ad` | — |
+| `--color-idea-text` / `-border` | rótulo e borda da categoria Ideia | `#966811` / `#eed8ad` | — |
+| `--color-success-bg` | fundo de confirmação | `#f1f7e4` | — |
 
-Tokens implementados em `apps/web/src/app/globals.css` (`@theme` do Tailwind 4). Componentes
-**não usam** a paleta crua do Tailwind (`red-50`, `amber-100`, `green-50`): fundos e bordas de
-status vêm dos tokens derivados acima.
+Tokens implementados em `apps/web/src/app/globals.css` (`@theme` do Tailwind 4). Os aliases
+`surface`, `text-*` e `border-*` mantêm as páginas antigas na mesma paleta. Cores de estado
+vêm dos tokens semânticos acima.
 
-Estados de foco sempre visíveis: anel de 2px em `--color-brand-600` com offset de 2px.
+Estados de foco sempre visíveis: anel de 3px em `--color-brand-600` com offset de 2px.
 
-### Espaçamento e raio
+### Espaçamento e superfícies
 
 - Escala de 4px: `4, 8, 12, 16, 20, 24, 32, 48`.
-- Cartão: raio `8px`; botão: raio `8px`; chip/badge: raio `4px` (quadrado de sinalização);
-  pílula só para contadores.
-- Sombra de cartão: `--shadow-stamp` (`2px 2px 0 rgb(28 25 23 / 0.08)`) — dura, de carimbo.
+- Cartões: raio de 14–16px; botões 12px; chips pílulas; badges radius 6px.
+- Sombra de cartão: `--shadow-stamp` (`2px 2px 0 rgb(23 53 59 / 0.08)`).
 
 ### Tipografia
 
@@ -63,8 +63,8 @@ Estados de foco sempre visíveis: anel de 2px em `--color-brand-600` com offset 
 | `text-sm` medium | 14px/500 | rótulos, botões secundários |
 | `text-xs` | 12px/400 | metadados (mínimo absoluto; nada abaixo disso) |
 
-Display: `ui-serif, Georgia, "Times New Roman", serif` (aplicado a `h1`/`h2` no `globals.css`).
-Corpo: `system-ui`. Sem webfont na primeira pintura — as duas famílias são do sistema.
+Display: `ui-serif, Georgia, "Times New Roman", serif` em títulos semânticos. Corpo: Manrope,
+com `system-ui` como fallback. Campos mantêm pelo menos `16px` para evitar zoom automático no iOS.
 
 ## 3. Componentes obrigatórios
 

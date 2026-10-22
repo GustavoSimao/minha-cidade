@@ -29,6 +29,8 @@ revogação cria ADR de substituição referenciando o anterior.
 | [0020](0020-encerramento-de-conta.md) | Encerramento de conta com anonimização | P4 |
 | [0021](0021-minimo-legal.md) | Termos, privacidade e aceite registrado | P22 |
 | [0022](0022-identidade-visual-praca-municipal.md) | Identidade visual "praça/municipal" (Etapa C do plano de design) | — |
+| [0023](0023-motivos-de-denuncia.md) | Conjunto fechado de motivos de denúncia | P17, C1 |
+| [0024](0024-referencia-visual-rede-social-local.md) | Referência visual Rede Social Local como padrão do frontend | — |
 
 > P1–P22 são as decisões de produto registradas em `docs/plano-reescrita-ddd.md` §2.
 

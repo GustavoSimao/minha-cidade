@@ -90,6 +90,12 @@ export interface EngagementRepository {
   /** Quantas publicações o usuário apoiou (contador público do perfil — P6). */
   countSupportedByUser(userId: string): Promise<number>;
 
+  /** Contadores de reações recebidas nas publicações do usuário (apoio/oposição). */
+  countReactionsReceivedByUser(userId: string): Promise<ReactionCounts>;
+
+  /** Total de comentários recebidos nas publicações do usuário. */
+  countCommentsReceivedByUser(userId: string): Promise<number>;
+
   listComments(
     publicationId: string,
     options: { limit: number; before?: string | null },

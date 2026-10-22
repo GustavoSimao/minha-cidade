@@ -7,24 +7,22 @@
 
 ## Guia de modelos
 
-Você sabe qual modelo está te powerizando: ele aparece no seu system prompt
-("You are powered by the model named ..."). Antes de começar qualquer tarefa, compare com a
-tabela abaixo:
+Escolha o modelo conforme as capacidades necessárias, o contexto disponível e a complexidade
+da tarefa. As recomendações abaixo indicam papéis especializados do Kilo quando forem úteis;
+elas não fixam um provedor ou identificador de modelo e não impedem que o agente atual execute
+o trabalho quando tiver as capacidades necessárias.
 
-| Família de tarefa | Modelo | Agente |
+| Família de tarefa | Capacidade recomendada | Agente Kilo |
 |---|---|---|
-| produto / PRD | `minimax/minimax-m2.7:free` | `@product-owner` |
-| spec / plano / código | `stepfun/step-3.7-flash:free` | `@spec-writer`, `@plan-tasks`, `@task-executor` |
-| design / UI (exige leitura de imagens) | `stepfun/step-3.7-flash:free` | `@design-reviewer` |
-| revisão read-only de código | `nvidia/nemotron-3.5-lightning:free` | `@clean-code-reviewer` |
+|---|---|---|
+| produto / PRD | Síntese de produto e análise de requisitos | `@product-owner` |
+| spec / plano / código | Raciocínio técnico e capacidade de trabalhar com o repositório | `@spec-writer`, `@plan-tasks`, `@task-executor` |
+| design / UI (quando exige leitura de imagens) | Análise visual e capacidade de trabalhar com a stack frontend | `@design-reviewer` |
+| revisão read-only de código | Análise cuidadosa sem modificar arquivos | `@clean-code-reviewer` |
 
-**Regra do aviso**: se a tarefa pedida pertence a uma família e o modelo atual não tem o
-requisito dessa família (ex.: design em modelo texto-only), **pare antes de trabalhar** e
-aponte a recomendação. Formato do alerta — texto sóbrio, sem emoji, sem marcadores decorativos:
-
-> Modelo atual: <modelo>. A tarefa é da família <família>, que exige <requisito>.
-> Recomendação: <@agente> (<modelo>), ou Tab para trocar de agente, ou /models para trocar o
-> modelo. Continuo assim mesmo?
+Use um agente Kilo especializado quando isso melhorar o resultado e estiver disponível. Não
+interrompa a tarefa apenas porque o modelo atual difere de uma recomendação: avalie suas
+capacidades reais, informe qualquer limitação concreta e prossiga com o trabalho possível.
 
 ## Permissões e aprovações
 
@@ -75,5 +73,5 @@ Skills disponíveis neste repo (`.kilo/skills/`):
 - `better-design` — usar **apenas** ao criar ou alterar UI com design system (tokens,
   componentes shadcn). Nunca para tarefas fora de interface.
 
-Comando `/modelo` (`.kilo/command/modelo.md`): imprime a tabela acima e alerta em caso de
-mismatch entre a tarefa informada e o modelo da sessão.
+Comando `/modelo` (`.kilo/command/modelo.md`): recomenda capacidades e agentes Kilo conforme a
+família da tarefa, sem exigir identificadores específicos de modelo.

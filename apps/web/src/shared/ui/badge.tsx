@@ -7,7 +7,7 @@ const TONES: Record<BadgeTone, string> = {
   moderation: "bg-warning-bg text-warning border-warning-border",
   neutral: "bg-surface text-text-muted border-border-subtle",
   problem: "bg-danger-bg text-danger border-danger-border",
-  idea: "bg-success-bg text-success border-success-border",
+  idea: "bg-idea-pale text-idea-text border-idea-border",
 };
 
 /** Etiqueta compacta usada em selo institucional, tipo de publicação etc. */
@@ -25,7 +25,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium",
+        "inline-flex items-center rounded-[6px] border px-2 py-0.5 text-xs font-medium",
         TONES[tone],
         className,
       )}

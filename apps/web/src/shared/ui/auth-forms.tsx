@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import Link from "next/link";
 
 import {
   signInAction,
@@ -116,13 +117,13 @@ export function RegisterForm() {
           label={
             <>
               Li e aceito os{" "}
-              <a className="text-brand-600 underline" href="/termos">
+              <Link className="text-brand-600 underline" href="/termos">
                 termos de uso
-              </a>{" "}
+              </Link>{" "}
               e a{" "}
-              <a className="text-brand-600 underline" href="/privacidade">
+              <Link className="text-brand-600 underline" href="/privacidade">
                 política de privacidade
-              </a>
+              </Link>
               .
             </>
           }

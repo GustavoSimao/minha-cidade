@@ -57,18 +57,20 @@ const [neighborhoodRequest, setNeighborhoodRequest] = useState<NeighborhoodReque
 
 const searchSeq = useRef(0);
 
-// Lista exibida: cidade atual + atalho de lançamento + resultados da busca
-// (estado derivado — sem efeito colateral de renderização).
+// Cidade de lançamento não aparece automaticamente: a lista só oferece
+// resultados depois que a pessoa começa uma busca.
 const options = useMemo(() => {
   const merged = [
-    ...(currentOption ? [currentOption] : []),
-    ...(launchCity ? [launchCity] : []),
+    ...(launchCity && term.trim().length >= 2 &&
+    launchCity.name.toLocaleLowerCase().includes(term.trim().toLocaleLowerCase())
+      ? [launchCity]
+      : []),
     ...(searchRequest !== null && !searchRequest.loading ? searchRequest.items : []),
   ];
   return merged.filter(
     (option, index) => merged.findIndex((o) => o.id === option.id) === index,
   );
-}, [currentOption, launchCity, searchRequest]);
+}, [launchCity, searchRequest, term]);
 
 const searchLoading = searchRequest !== null && searchRequest.loading;
 const searchError =
@@ -263,7 +265,7 @@ useEffect(() => {
               <p className="text-sm text-danger" role="alert">
                 {searchError}
               </p>
-            ) : (
+            ) : term.trim().length >= 2 ? (
               <ul className="max-h-44 divide-y divide-border-subtle overflow-y-auto rounded-lg border border-border-subtle">
                 {options.length === 0 ? (
                   <li className="px-3 py-2 text-sm text-text-muted">
@@ -283,7 +285,9 @@ useEffect(() => {
                   ))
                 )}
               </ul>
-            )}
+            ) : term.trim().length > 0 ? (
+              <p className="text-sm text-text-muted">Digite ao menos 2 letras para buscar.</p>
+            ) : null}
           </>
         )}
       </div>

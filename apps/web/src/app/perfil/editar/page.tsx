@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { ResolveLocationSelection } from "@/contexts/geography/application/use-cases";
@@ -74,10 +73,11 @@ export default async function EditProfilePage() {
     verifiedOrg: profile.verifiedOrg?.name ?? null,
     role: profile.role.name,
     emailConfirmed: session.emailConfirmed,
+    website: profile.website,
   };
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-6">
+    <div className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10">
       {!session.emailConfirmed ? (
         <Alert tone="error">
           Confirme seu e-mail para publicar, comentar, enviar amizades e denunciar. A
@@ -88,16 +88,6 @@ export default async function EditProfilePage() {
       {profile.isVerified && profile.verifiedOrg ? (
         <p className="text-sm text-text-muted">
           Selo institucional ativo: <BadgePill tone="institutional">{profile.verifiedOrg.name}</BadgePill>
-        </p>
-      ) : null}
-
-      {!profile.isVerified && session.emailConfirmed ? (
-        <p className="text-sm text-text-muted">
-          Representa um órgão público?{" "}
-          <Link className="text-brand-600 hover:underline" href="/solicitar-selo">
-            Solicitar selo institucional
-          </Link>{" "}
-          com o link oficial como evidência.
         </p>
       ) : null}
 

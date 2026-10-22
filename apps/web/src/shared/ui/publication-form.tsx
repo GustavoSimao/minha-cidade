@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useActionState } from "react";
 import Link from "next/link";
 
@@ -15,6 +15,7 @@ import { resizeToWebp, uploadImage } from "@/shared/ui/upload-image";
 
 /** Limite de imagens por publicação (P15). */
 const MAX_IMAGES = 3;
+const PUBLICATION_DRAFT_KEY = "minha-cidade:publication-draft:v1";
 
 export interface PublicationFormProps {
   launchCity: { id: number; name: string; uf: string; slug: string } | null;
@@ -42,6 +43,52 @@ export function PublicationForm({ launchCity }: PublicationFormProps) {
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [uploads, setUploads] = useState<UploadItem[]>([]);
   const fileInput = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const [draftSaved, setDraftSaved] = useState(false);
+
+  useEffect(() => {
+    try {
+      const rawDraft = window.localStorage.getItem(PUBLICATION_DRAFT_KEY);
+      if (!rawDraft || !formRef.current) return;
+      const draft = JSON.parse(rawDraft) as {
+        type?: "problem" | "idea";
+        title?: string;
+        content?: string;
+        isAnonymous?: boolean;
+      };
+      if (draft.type === "problem" || draft.type === "idea") setType(draft.type);
+      setIsAnonymous(draft.isAnonymous === true);
+      const titleField = formRef.current.elements.namedItem("title");
+      const contentField = formRef.current.elements.namedItem("content");
+      if (titleField instanceof HTMLInputElement && typeof draft.title === "string") {
+        titleField.value = draft.title;
+      }
+      if (contentField instanceof HTMLTextAreaElement && typeof draft.content === "string") {
+        contentField.value = draft.content;
+      }
+      setDraftSaved(true);
+    } catch {
+      window.localStorage.removeItem(PUBLICATION_DRAFT_KEY);
+    }
+  }, []);
+
+  function saveDraft() {
+    const form = formRef.current;
+    if (!form) return;
+    const titleField = form.elements.namedItem("title");
+    const contentField = form.elements.namedItem("content");
+    try {
+      window.localStorage.setItem(PUBLICATION_DRAFT_KEY, JSON.stringify({
+        type,
+        title: titleField instanceof HTMLInputElement ? titleField.value : "",
+        content: contentField instanceof HTMLTextAreaElement ? contentField.value : "",
+        isAnonymous,
+      }));
+      setDraftSaved(true);
+    } catch {
+      setDraftSaved(false);
+    }
+  }
 
   const mediaPaths = uploads
     .map((item) => item.path)
@@ -111,7 +158,7 @@ export function PublicationForm({ launchCity }: PublicationFormProps) {
       description="Conte o que está acontecendo no seu bairro. Você pode publicar sem se identificar."
       title="Nova publicação"
     >
-      <form action={formAction} className="flex flex-col gap-4">
+      <form action={formAction} className="flex flex-col gap-4" ref={formRef}>
         <input name="type" type="hidden" value={type} />
         <input name="isAnonymous" type="hidden" value={isAnonymous ? "true" : "false"} />
         <input name="mediaPaths" type="hidden" value={mediaPaths.join("\n")} />
@@ -255,6 +302,9 @@ export function PublicationForm({ launchCity }: PublicationFormProps) {
         {state.error ? <Alert tone="error">{state.error}</Alert> : null}
 
         <div className="flex flex-wrap gap-2">
+          <Button disabled={pending || uploading} onClick={saveDraft} type="button" variant="secondary">
+            Salvar rascunho
+          </Button>
           <Button disabled={pending || uploading} type="submit">
             {pending ? "Publicando…" : "Publicar"}
           </Button>
@@ -265,6 +315,7 @@ export function PublicationForm({ launchCity }: PublicationFormProps) {
             Ver feed
           </Link>
         </div>
+        {draftSaved ? <p aria-live="polite" className="text-sm text-text-muted">Rascunho salvo neste navegador.</p> : null}
       </form>
     </Card>
   );

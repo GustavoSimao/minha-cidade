@@ -62,7 +62,7 @@ export default async function PublicationPage({ params }: PublicationPageProps) 
 
     const removedByModeration = row.deleted_at === null;
     return (
-      <div className="mx-auto max-w-2xl">
+      <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6">
         <h1 className="text-2xl font-bold text-text-strong">
           {removedByModeration ? "Publicação oculta pela moderação" : "Publicação apagada"}
         </h1>
@@ -114,17 +114,20 @@ export default async function PublicationPage({ params }: PublicationPageProps) 
   );
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-2xl min-w-0 px-4 py-6 sm:px-6">
       <article className="rounded-card border border-border-subtle bg-surface-raised p-5 shadow-stamp sm:p-6">
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge tone={publication.type === "problem" ? "problem" : "idea"}>
-            {publication.type === "problem" ? "Problema" : "Ideia"}
-          </Badge>
-          <span className="text-sm text-text-muted">
-            {[city ? `${city.name} — ${city.uf.sigla}` : null, neighborhood?.name ?? "Bairro não informado"]
-              .filter((part): part is string => part !== null)
-              .join(", ")}
-          </span>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <Badge tone={publication.type === "problem" ? "problem" : "idea"}>
+              {publication.type === "problem" ? "Problema" : "Ideia"}
+            </Badge>
+            <span className="text-sm text-text-muted">
+              {[city ? `${city.name} — ${city.uf.sigla}` : null, neighborhood?.name ?? "Bairro não informado"]
+                .filter((part): part is string => part !== null)
+                .join(", ")}
+            </span>
+          </div>
+          <ReportButton targetId={publication.id} targetType="publication" allowed={session !== null && session.emailConfirmed && !isAuthor} />
         </div>
 
         <h1 className="mt-3 text-xl font-bold text-text-strong sm:text-2xl">
@@ -200,18 +203,13 @@ export default async function PublicationPage({ params }: PublicationPageProps) 
 
       <EngagementSection
         publicationId={publication.id}
+        publicationTitle={publication.title}
         session={
           session === null
             ? null
             : { userId: session.userId, emailConfirmed: session.emailConfirmed }
         }
       />
-
-      {session !== null && session.emailConfirmed && !isAuthor ? (
-        <div className="mt-4">
-          <ReportButton targetId={publication.id} targetType="publication" allowed />
-        </div>
-      ) : null}
 
       <Link
         className="mt-4 inline-flex min-h-11 items-center rounded-lg border border-border-subtle px-4 py-2 text-sm font-medium text-text-body hover:bg-surface"

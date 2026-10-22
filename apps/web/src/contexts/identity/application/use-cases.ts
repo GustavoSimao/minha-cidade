@@ -48,6 +48,7 @@ export class UpdateMyProfile {
       avatarPath: input.avatarPath ?? current.avatarPath,
       coverPath: input.coverPath ?? current.coverPath,
       showNeighborhood: input.showNeighborhood ?? current.showNeighborhood,
+      website: input.website ?? current.website,
       cityId: input.cityId ?? current.cityId,
       neighborhoodId: input.neighborhoodId ?? current.neighborhoodId,
     };

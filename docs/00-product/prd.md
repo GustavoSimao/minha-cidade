@@ -1,7 +1,7 @@
 # PRD — Minha Cidade (MVP v1)
 
 > Fonte da verdade do produto. Alteração de escopo exige PR neste arquivo + ADR.
-> Status: **rascunho para aprovação** · Versão: 1.0 · Data: 2026-10-10
+> Status: **aprovado** · Versão: 1.0 · Data: 2026-10-10
 
 ## 1. Problema
 
