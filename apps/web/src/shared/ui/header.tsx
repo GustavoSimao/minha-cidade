@@ -1,5 +1,9 @@
 "use client";
 
+import Link from "next/link";
+
+import { signOutAction } from "@/contexts/identity/interfaces/actions";
+
 import { Icon } from "./icon";
 import { Button } from "./button";
 import { Avatar } from "./avatar";
@@ -21,6 +25,7 @@ export function Header({
   onMenu,
   menuOpen = false,
   menuControlsId = "mobile-navigation",
+  signedIn = false,
 }: {
   title: string;
   screen: Screen;
@@ -28,9 +33,10 @@ export function Header({
   onMenu?: () => void;
   menuOpen?: boolean;
   menuControlsId?: string;
+  signedIn?: boolean;
 }) {
   return (
-    <header className="topbar">
+    <header className="topbar" role="banner">
       <div className="mobile-logo flex items-center gap-1">
         <div className="logo">
           <div className="logo-mark">
@@ -50,11 +56,7 @@ export function Header({
           aria-expanded={menuOpen}
         >
           <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            {menuOpen ? (
-              <path d="m6 6 12 12M18 6 6 18" />
-            ) : (
-              <><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></>
-            )}
+            <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
           </svg>
         </Button>
       )}
@@ -62,26 +64,60 @@ export function Header({
       <div className="page-title hidden md:block">{title}</div>
 
       <div className="top-actions">
-        <Button
-          variant={screen === "notificacoes" ? "secondary" : "ghost"}
-          size="sm"
-          className="icon-button"
-          onClick={() => go("notificacoes")}
-          title="Notificações"
-          aria-label="Notificações"
-        >
-          <Icon name="bell" size={20} />
-        </Button>
+        {signedIn ? (
+          <>
+            <Link
+              href="/publicar"
+              className="hidden min-h-11 items-center rounded-[12px] bg-brand px-4 text-sm font-bold text-white hover:bg-brand-dark sm:inline-flex"
+            >
+              Publicar
+            </Link>
+            <Button
+              variant={screen === "notificacoes" ? "secondary" : "ghost"}
+              size="sm"
+              className="icon-button"
+              onClick={() => go("notificacoes")}
+              title="Notificações"
+              aria-label="Notificações"
+            >
+              <Icon name="bell" size={20} />
+            </Button>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          className="header-profile-button !min-h-11 !w-11 !shrink-0 !p-0 rounded-full grid place-items-center"
-          onClick={() => go("perfil")}
-          aria-label="Abrir meu perfil"
-        >
-          <Avatar name="Minha conta" size={40} />
-        </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="header-profile-button !min-h-11 !w-11 !shrink-0 !p-0 rounded-full grid place-items-center"
+              onClick={() => go("perfil")}
+              aria-label="Abrir meu perfil"
+            >
+              <Avatar name="Minha conta" size={40} />
+            </Button>
+
+            <form action={signOutAction}>
+              <button
+                type="submit"
+                className="inline-flex min-h-11 cursor-pointer items-center rounded-[12px] border border-line px-4 text-sm font-bold text-ink hover:bg-soft"
+              >
+                Sair
+              </button>
+            </form>
+          </>
+        ) : (
+          <>
+            <Link
+              href="/login"
+              className="inline-flex min-h-11 items-center rounded-[12px] px-3 text-sm font-bold text-ink hover:bg-soft sm:px-4"
+            >
+              Entrar
+            </Link>
+            <Link
+              href="/cadastro"
+              className="inline-flex min-h-11 items-center rounded-[12px] bg-brand px-3 text-sm font-bold text-white hover:bg-brand-dark sm:px-4"
+            >
+              Criar conta
+            </Link>
+          </>
+        )}
       </div>
     </header>
   );

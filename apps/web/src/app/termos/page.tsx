@@ -25,10 +25,6 @@ export default function TermsPage() {
       <ul className="list-disc space-y-1 pl-5">
         <li>você é responsável pelo uso da sua conta e por mantê-la segura;</li>
         <li>
-          publicações anônimas mantêm a autoria registrada internamente, acessível apenas
-          para moderação;
-        </li>
-        <li>
           você pode encerrar sua conta a qualquer momento em <code>/perfil/editar</code>:
           seus dados são apagados e suas publicações permanecem sem autor identificado.
         </li>

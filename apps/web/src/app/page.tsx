@@ -122,6 +122,7 @@ async function ServerFeed({ searchParams }: HomePageProps) {
       anyFilterActive={anyFilterActive}
       canInteract={session !== null && session.emailConfirmed}
       myReactions={myReactions}
+      signedIn={session !== null}
     />
   );
 }

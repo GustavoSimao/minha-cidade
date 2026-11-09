@@ -6,7 +6,7 @@ import { expect, test } from "@playwright/test";
  */
 test("feed anônimo lista publicações do seed", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Feed do bairro" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Publicações recentes" })).toBeVisible();
   // Sem depender de paginação: o feed lista cards (limite 20, recente
   // primeiro) — publicações acumuladas de outras execuções empurrariam os
   // títulos do seed para a página 2. O conteúdo do seed é verificado pelos

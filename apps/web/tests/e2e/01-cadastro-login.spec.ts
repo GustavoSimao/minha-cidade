@@ -15,7 +15,7 @@ test("cadastro confirma e-mail pelo Mailpit e abre sessão no feed", async ({ pa
 
 test("login com e-mail e senha usa usuário do seed", async ({ page }) => {
   await signIn(page, "ana@minhacidade.dev");
-  await expect(page.getByRole("heading", { name: "Feed do bairro" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Publicações recentes" })).toBeVisible();
 });
 
 test("login inválido mostra erro e mantém visitante", async ({ page }) => {
@@ -35,7 +35,7 @@ test("sair encerra a sessão", async ({ page }) => {
 
 test("visitante anônimo lê o feed (P4)", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Feed do bairro" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Publicações recentes" })).toBeVisible();
   // Sem depender de paginação: o feed lista publicações (limite 20, recente
   // primeiro) — a existência de cards já prova a leitura anônima.
   await expect(page.locator("article").first()).toBeVisible();

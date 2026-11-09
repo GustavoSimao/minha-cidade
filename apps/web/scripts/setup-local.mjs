@@ -210,11 +210,26 @@ const parse = (pattern) => {
   return colon === -1 ? "" : line.slice(colon + 1).trim();
 };
 
+// CLI mais recente: `supabase status` imprime um objeto JSON (API_URL, DB_URL,
+// PUBLISHABLE_KEY, SECRET_KEY, ANON_KEY, SERVICE_ROLE_KEY).
+const statusJson = (() => {
+  const start = status.stdout.indexOf("{");
+  const end = status.stdout.lastIndexOf("}");
+  if (start === -1 || end <= start) return {};
+  try {
+    return JSON.parse(status.stdout.slice(start, end + 1));
+  } catch {
+    return {};
+  }
+})();
+
 const apiUrl =
+  statusJson.API_URL ||
   parseTableValue("Project URL") ||
   parse(/^API URL:/i) ||
   "http://127.0.0.1:54321";
 const dbUrl =
+  statusJson.DB_URL ||
   status.stdout
     .split(/\r?\n/)
     .filter((row) => row.includes("postgresql://"))
@@ -226,9 +241,17 @@ const dbUrl =
   parse(/^DB URL:/i) ||
   "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
 const anonKey =
-  parseTableValue("Publishable") || parse(/^anon key:/i) || "";
+  statusJson.PUBLISHABLE_KEY ||
+  statusJson.ANON_KEY ||
+  parseTableValue("Publishable") ||
+  parse(/^anon key:/i) ||
+  "";
 const serviceRoleKey =
-  parseTableValue("Secret") || parse(/^service_role key:/i) || "";
+  statusJson.SECRET_KEY ||
+  statusJson.SERVICE_ROLE_KEY ||
+  parseTableValue("Secret") ||
+  parse(/^service_role key:/i) ||
+  "";
 
 if (!anonKey || !serviceRoleKey) {
   fail(

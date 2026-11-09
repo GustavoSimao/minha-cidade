@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 
 import { SupabaseAuthGateway } from "@/contexts/identity/infrastructure/supabase/auth-gateway";
 
+/** Aceita só caminhos internos; evita open redirect (`//host`, `/\host`). */
+function safeNext(raw: string | null): string {
+  return raw && /^\/(?![/\\])/.test(raw) ? raw : "/";
+}
+
 /**
  * Callback de autenticação. Dois fluxos chegam aqui:
  *
@@ -15,7 +20,7 @@ export async function GET(request: Request) {
   const code = searchParams.get("code");
   const tokenHash = searchParams.get("token_hash");
   const type = searchParams.get("type");
-  const next = searchParams.get("next") ?? "/";
+  const next = safeNext(searchParams.get("next"));
 
   if (code) {
     const auth = new SupabaseAuthGateway();

@@ -52,6 +52,7 @@ interface HomeShellProps {
   anyFilterActive: boolean;
   canInteract: boolean;
   myReactions: Record<string, "support" | "oppose">;
+  signedIn: boolean;
 }
 
 const NAV_ITEMS: { id: Screen; label: string; href: string; iconName: "home" | "map" | "users" | "bookmark" | "bell" | "chart" }[] = [
@@ -75,6 +76,7 @@ export function HomeShell({
   anyFilterActive,
   canInteract,
   myReactions,
+  signedIn,
 }: HomeShellProps) {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -231,6 +233,7 @@ export function HomeShell({
           }}
           menuOpen={menuOpen}
           menuControlsId={isWideScreen ? "desktop-navigation" : "mobile-navigation"}
+          signedIn={signedIn}
         />
         <div className={`content max-w-[1390px] mx-auto p-[30px_34px_70px] ${screen === "feed" ? "with-rail" : ""}`}>
           <div className="primary-content min-w-0">
