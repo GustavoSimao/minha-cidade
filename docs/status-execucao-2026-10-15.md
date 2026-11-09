@@ -2,8 +2,8 @@
 
 > Snapshot às ~18:50 (fim do dia). Continua `docs/status-execucao-2026-10-14.md`
 > (T4/T5/T6) e `docs/status-design-2026-10-12.md` (Lighthouse). Planos com registro
-> de execução: `.kilo/plans/1792020880261` (T4→Fase 3),
-> `.kilo/plans/1792036500000` (feed na raiz), `.kilo/plans/1792042800000`
+> de execução: `docs/planos/1792020880261` (T4→Fase 3),
+> `docs/planos/1792036500000` (feed na raiz), `docs/planos/1792042800000`
 > (selo em comentários + solicitação de selo).
 
 ## Estado do repositório (após os commits do dia)

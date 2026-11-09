@@ -2,7 +2,7 @@
 
 - **Status:** Substituído por ADR-0024
 - **Data:** 2026-10-12
-- **Decisão do plano:** Etapa C do plano de design (`docs/.kilo/plans/1791837096489-design-correcao-completude-identidade.md`)
+- **Decisão do plano:** Etapa C do plano de design (`docs/planos/1791837096489-design-correcao-completude-identidade.md`)
 
 ## Contexto
 

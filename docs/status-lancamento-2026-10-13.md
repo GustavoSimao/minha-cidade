@@ -1,7 +1,7 @@
 # Status — Lançamento local + B2G (handoff de retomada)
 
 > Escrito em 2026-10-13 ao pausar a execução do plano
-> `.kilo/plans/1791856023122-lancamento-local-e-b2g.md`.
+> `docs/planos/1791856023122-lancamento-local-e-b2g.md`.
 > **Objetivo da sessão que retomar:** terminar o plano, na ordem A→B→C.
 > Este documento é a fonte da verdade do andamento; o plano segue sendo o contrato.
 

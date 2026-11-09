@@ -1,7 +1,7 @@
 # Contexto: Analytics (snapshots para a transparência)
 
 > **Status:** implementado na Fase 10 (`analytics.daily_metrics`, job pg_cron,
-> página `/transparencia`). Fonte: `.kilo/plans/1791856023122-lancamento-local-e-b2g.md` (B3).
+> página `/transparencia`). Fonte: `docs/planos/1791856023122-lancamento-local-e-b2g.md` (B3).
 
 ## 1. Histórias de usuário
 

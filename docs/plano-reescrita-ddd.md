@@ -48,7 +48,7 @@ O repo anterior (`laravel/laravel` + 7 módulos composer locais, ~2 commits, **h
 |---|---|
 | D1 | App web: **Next.js (App Router) + TypeScript**, hospedado na **Vercel**; UI mobile-first responsiva |
 | D2 | Backend: **Supabase** — Postgres, Auth (Google + email/senha), Storage, Realtime, pg_cron; RLS ativo |
-| D3 | **Repo novo** para o app (`minha-cidade-web`) e repo separado para analytics (`minha-cidade-analytics`). O repo Laravel antigo é deletado **antes da Fase 0**; só `.kilo/plans/` (este plano) sobrevive |
+| D3 | **Repo novo** para o app (`minha-cidade-web`) e repo separado para analytics (`minha-cidade-analytics`). O repo Laravel antigo é deletado **antes da Fase 0**; só `docs/planos/` (este plano) sobrevive |
 | D4 | **Documentação como fonte de verdade**: spec por bounded context + C4 + ADRs, versionados em `docs/`; PR não passa sem spec e testes de domínio atualizados |
 | D5 | Bounded contexts: Identity & Access, Geography, Publication, Engagement, Social Graph, Moderation, Notification, Analytics |
 | D6 | Código e banco espelham os contextos: `apps/web/src/contexts/<ctx>/{domain,application,infrastructure,interfaces}` e **um schema Postgres por contexto** (+ schema `shared` para tipos comuns) |
@@ -115,7 +115,7 @@ tests/e2e/            testes Playwright (viewports mobile/desktop) — criados n
 Cada fase termina com: spec do contexto escrita/revisada → migrations → código de domínio/aplicação → testes → tela → check de validação. Nada de código sem spec correspondente.
 
 **Fase 0 — Fundação do repo novo**
-- Criar repo `minha-cidade-web` (o repo Laravel antigo já foi deletado; apenas `.kilo/plans/` com este plano permaneceu). Copiar este plano para `docs/` do repo novo.
+- Criar repo `minha-cidade-web` (o repo Laravel antigo já foi deletado; apenas `docs/planos/` com este plano permaneceu). Copiar este plano para `docs/` do repo novo.
 - Next.js (App Router) + TypeScript strict + Tailwind (uma versão só) + ESLint/Prettier.
 - Supabase: projeto criado, migrations em `supabase/migrations` versionadas por contexto.
 - CI: PR roda lint + typecheck + `vitest`; `playwright` em PR para main; deploy preview por PR.

@@ -2,7 +2,7 @@
 
 > Retomar **sem investigar**: o trabalho está no working tree (nada commitado desde
 > `1e373a3`, 12/10). Este arquivo + o plano
-> `.kilo/plans/1791938523555-retomada-pos-b1-b4.md` (seção "ESTADO DE EXECUÇÃO")
+> `docs/planos/1791938523555-retomada-pos-b1-b4.md` (seção "ESTADO DE EXECUÇÃO")
 > contêm tudo que a próxima sessão precisa.
 
 ## Feito e validado

@@ -1,7 +1,7 @@
 # Status e retomada — Design (2026-10-12)
 
 > Documento de handoff da sessão que executou o plano de design
-> (`.kilo/plans/1791837096489-design-correcao-completude-identidade.md`).
+> (`docs/planos/1791837096489-design-correcao-completude-identidade.md`).
 > Escrever aqui o estado real: o que ficou pronto, o que falta e como retomar.
 
 ## O que foi feito
@@ -44,7 +44,7 @@ Nomes dos tokens preservados — só os valores mudaram.
 
 - `npm run lint`, `npm run typecheck`, `npm run test` (**184 testes**, 3 novos em
   `aggregate-counts`) e `npm run build` — tudo verde.
-- Detector `avoid-ai-design` (`node .kilo/skills/avoid-ai-design/scripts/detect.mjs apps/web/src`):
+- Detector `avoid-ai-design` (`node .claude/skills/avoid-ai-design/scripts/detect.mjs apps/web/src`):
   **0 achados** (P0/P1/P2).
 - Rotas conferidas em `next dev` **e** em `next start` (porta 3100, depois desligado): `/`,
   `/feed`, `/transparencia`, `/termos`, `/publicacao/[id]`, `/perfil/{username}`, `/login`,
