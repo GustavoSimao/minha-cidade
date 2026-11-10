@@ -15,6 +15,7 @@ const paths: Record<string, ReactNode> = {
   pin: <><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></>,
   chevron: <path d="m9 18 6-6-6-6"/>,
   plus: <path d="M12 5v14M5 12h14"/>,
+  download: <><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></>,
   idea: <><path d="M9 18h6M10 22h4"/><path d="M8 14a7 7 0 1 1 8 0c-1 .8-1 2-1 2H9s0-1.2-1-2Z"/></>,
   alert: <><path d="M12 3 2 21h20Z"/><path d="M12 9v5M12 18h.01"/></>,
   support: <path d="m7 11 3 3 7-7"/>,

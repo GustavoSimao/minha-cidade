@@ -15,6 +15,7 @@ import { FeedFilters } from "@/shared/ui/feed-filters";
 import { RelativeTime } from "@/shared/ui/relative-time";
 import { Header } from "@/shared/ui/header";
 import { RightRail } from "@/shared/ui/right-rail";
+import { InstallAppButton } from "@/shared/ui/pwa/install-app";
 import { ReactionButtons } from "@/shared/ui/engagement/reaction-buttons";
 import { publicStorageUrl } from "@/contexts/identity/infrastructure/supabase/public-url";
 
@@ -159,6 +160,7 @@ export function HomeShell({
             );
           })}
         </nav>
+        <InstallAppButton className="mt-4 border-t border-line pt-4" />
       </aside>
 
       {/* Mobile/tablet drawer; never render alongside the desktop sidebar. */}
@@ -209,6 +211,7 @@ export function HomeShell({
             );
           })}
         </nav>
+        <InstallAppButton className="mt-4 border-t border-line pt-4" />
       </aside>
 
       {/* Mobile overlay */}
