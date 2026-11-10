@@ -4,6 +4,7 @@ import Link from "next/link";
 import { RegisterServiceWorker } from "@/shared/ui/pwa/register-sw";
 import { SiteHeaderSlot } from "@/shared/ui/site-header-slot";
 import { BottomNav } from "@/shared/ui/bottom-nav";
+import { BackButton } from "@/shared/ui/back-button";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -39,6 +40,7 @@ export default function RootLayout({ children, modal }: { children: React.ReactN
           <SiteHeaderSlot />
         </div>
         <main className="app-page min-w-0 flex-1 pb-24 md:pb-0" id="main-content">
+          <BackButton />
           {children}
         </main>
         <BottomNav />
